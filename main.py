@@ -71,11 +71,14 @@ class Update:
 
             with open(__file__, "r", encoding="utf8") as f:
                 file = f.read()
+                
             urlcode = requests.get(URL.RAW_main_py).text
             urlhash = hashlib.sha256((urlcode).encode('utf-8')).hexdigest()
 
-            if hashlib.sha256((file).encode('utf-8')).hexdigest() != urlhash:
+            if hashlib.sha256((file).encode('utf-8')).hexdigest() == urlhash:
                 print("                   There is an update availble. Do you want to Update ? ")
+                print(hashlib.sha256((file).encode('utf-8')).hexdigest())
+                print(urlhash)
                 return "UPDATE" ,input("                   [ Y / N ] ")
 
             else:
