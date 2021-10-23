@@ -12,28 +12,33 @@ import sys
 import pypresence
 import threading
 import humanize
-import update_check
+import hashlib
+import base64
+import validators
 
 lock = threading.Lock()
 
-from colorama import Fore, Style, init
 from concurrent.futures import ThreadPoolExecutor
 
-init(autoreset=True)
+colorama.init(autoreset=True)
 
 class Colour:
-    YELLOW = Fore.YELLOW
-    CYAN = Fore.CYAN
-    WHITE = Fore.WHITE
-    RED = Fore.RED
-    GREEN = Fore.GREEN
-    MAGENTA = Fore.MAGENTA
+
+    YELLOW = colorama.Fore.YELLOW
+    CYAN = colorama.Fore.CYAN
+    WHITE = colorama.Fore.WHITE
+    RED = colorama.Fore.RED
+    GREEN = colorama.Fore.GREEN
+    MAGENTA = colorama.Fore.MAGENTA
+
+    BRIGHT = colorama.Style.BRIGHT
 
 class URL:
+
     Github = "https://github.com/reactxsw"
     Repository = "https://github.com/reactxsw/react-nuker/blob/main/main.py"
-    RAW_mainpy = "https://raw.githubusercontent.com/reactxsw/react-nuker/main/main.py"
-    RAW_configjson = "https://raw.githubusercontent.com/reactxsw/react-nuker/main/config.json"
+    RAW_main_py = "https://raw.githubusercontent.com/reactxsw/react-nuker/main/main.py"
+    RAW_config_json = "https://raw.githubusercontent.com/reactxsw/react-nuker/main/config.json"
 
     DiscordWebsocket = "wss://gateway.discord.gg/?v=9&encoding=json"
     BaseURL = "https://discord.com/api/v9/"
@@ -60,21 +65,31 @@ class URL:
     }
 
 class Update:
-    def __init__(self):
-        self.Repository = {
-            "main.py" : f"{URL.RAW_mainpy}",
-            "config.json" : f"{URL.RAW_configjson}"
-        }
+
+    def CheckUpdate(Check):
+        if Check is True:
+
+            with open(__file__, "r", encoding="utf8") as f:
+                file = f.read()
+            urlcode = requests.get(URL.RAW_main_py).text
+            urlhash = hashlib.sha256((urlcode).encode('utf-8')).hexdigest()
+
+            if hashlib.sha256((file).encode('utf-8')).hexdigest() != urlhash:
+                print("                   There is an update availble. Do you want to Update ? ")
+                return "UPDATE" ,input("                   [ Y / N ] ")
+
+            else:
+                return "UPTODATE", ""
+        
+        else:
+            pass
 
     def UpdateProgram(self):
-        for File , Url in self.Repository.items():
-            print(File)
-            print(Url)
-            if update_check.isUpToDate(File,Url)== False:
-                print("there is an update")
-                input()
+        print("ajajaj")
+
 
 class Infomation:
+
     def __init__(self):
         self.Author = "REACT#1120"
         self.__VERSION__ = "1.3.0"
@@ -82,26 +97,29 @@ class Infomation:
         self.Repository = URL.Repository
 
 class Status:
+
     SuccessStatus = [200,201,204]
 
     def Fail(Text):
+        
         lock.acquire()
-        print(f"                          {Style.BRIGHT}{Colour.RED} [{Colour.WHITE}FAIL{Colour.MAGENTA}] {Text}")
+        print(f"                   {Colour.BRIGHT}{Colour.RED}[{Colour.WHITE}FAIL{Colour.RED}] {Text}")
         lock.release()
 
     def Success(Text):
         lock.acquire()
-        print(f"                          {Style.BRIGHT}{Colour.GREEN} [{Colour.WHITE}SUCCESS{Colour.MAGENTA}] {Text}")
+        print(f"                   {Colour.BRIGHT}{Colour.GREEN}[{Colour.WHITE}SUCCESS{Colour.GREEN}] {Text}")
         lock.release()
     
     def Ratelimit(Text):
         lock.acquire()
-        print(f"                          {Style.BRIGHT}{Colour.MAGENTA} [{Colour.WHITE}RATELIMIT{Colour.MAGENTA}] {Text}")
+        print(f"                   {Colour.BRIGHT}{Colour.MAGENTA}[{Colour.WHITE}RATELIMIT{Colour.MAGENTA}] {Text}")
         lock.release()
 
 class Constant:
-    Blank = "_____________________________________"
+    CheckForUpdate = True
     RPC = False
+    Blank = "_____________________________________"
     if pathlib.Path("config.json").exists():
         START = True
         with open('config.json') as setting:
@@ -154,7 +172,7 @@ class ProxyIP:
     ProxyURL = URL.Proxy["ProxyUrls"].items()
     def GetProxies():
         ProxyList = []
-        ProxyFile = "Proxy.txt"
+        #ProxyFile = "Proxy.txt"
 
         URL = 0 
         HTTP = 0
@@ -192,11 +210,11 @@ class ProxyIP:
                         pass
 
         print(f"""
-            {humanize.intcomma(len(ProxyList))} proxies was scraped from {URL} urls 
-            {humanize.intcomma(HTTP)} http 
-            {humanize.intcomma(HTTPS)} https 
-            {humanize.intcomma(SOCKS4)} socks4 
-            {humanize.intcomma(SOCKS5)} socks5""")
+                   {humanize.intcomma(len(ProxyList))} Proxies was scraped from {URL} urls 
+                   {humanize.intcomma(HTTP)} HTTP 
+                   {humanize.intcomma(HTTPS)} HTTPS 
+                   {humanize.intcomma(SOCKS4)} socks4 
+                   {humanize.intcomma(SOCKS5)} socks5""")
         
         return ProxyList
 
@@ -232,27 +250,50 @@ class Function:
     def Spinner():
         l = ['|', '/', '-', '\\']
         for i in l*3:
-            sys.stdout.write('\r' + Style.BRIGHT + Fore.YELLOW +'Loading... '+i)
+            sys.stdout.write('\r'f"{Colour.BRIGHT}{Colour.YELLOW}Loading... {i}")
             sys.stdout.flush()
             time.sleep(0.075)
 
     def Menu():
-        logo = f"""                 
+        print(f"""{Colour.CYAN}                 
                                             ____  _____    _    ____ _____ 
                                            |  _ \| ____|  / \  / ___|_   _|
                                            | |_) |  _|   / _ \| |     | |  
-                                           |  _ <| |___ / ___ \ |___  | |  
-                                           |_| \_\_____/_/   \_\____| |_| V. {Infomation().__VERSION__}"""
-        print(Fore.CYAN +f"{logo}\n")
+                                           |  _ <| |___ / ___ \ |___  | | By. REACT#1120 
+                                           |_| \_\_____/_/   \_\____| |_| {Colour.YELLOW}V. {Infomation().__VERSION__}\n""")
         print(f"{Colour.YELLOW}                   ╔═════════════════════╦═════════════════════╦═════════════════════╦═════════════════════╗")
-        print(f"{Colour.YELLOW}                   ║{Colour.CYAN} [{Colour.WHITE}1{Colour.CYAN}] Scrape Channels {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}9{Colour.CYAN}] Spam Webhook    {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}17{Colour.CYAN}]Livestream      {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}25{Colour.CYAN}]Livestream      {Colour.YELLOW}║")
-        print(f"{Colour.YELLOW}                   ║{Colour.CYAN} [{Colour.WHITE}2{Colour.CYAN}] Scrape Members  {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}10{Colour.CYAN}]Connect         {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}18{Colour.CYAN}]Create Channels {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}26{Colour.CYAN}]Livestream      {Colour.YELLOW}║")
-        print(f"{Colour.YELLOW}                   ║{Colour.CYAN} [{Colour.WHITE}3{Colour.CYAN}] Scrape Roles    {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}11{Colour.CYAN}]Online          {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}19{Colour.CYAN}]Delete Channels {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}27{Colour.CYAN}]Livestream      {Colour.YELLOW}║")
-        print(f"{Colour.YELLOW}                   ║{Colour.CYAN} [{Colour.WHITE}4{Colour.CYAN}] Kick            {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}12{Colour.CYAN}]Livestream      {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}20{Colour.CYAN}]Channel Name    {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}28{Colour.CYAN}]Livestream      {Colour.YELLOW}║")
-        print(f"{Colour.YELLOW}                   ║{Colour.CYAN} [{Colour.WHITE}5{Colour.CYAN}] Ban             {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}13{Colour.CYAN}]Create Channels {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}21{Colour.CYAN}]Join            {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}29{Colour.CYAN}]Livestream      {Colour.YELLOW}║")
-        print(f"{Colour.YELLOW}                   ║{Colour.CYAN} [{Colour.WHITE}6{Colour.CYAN}] Join            {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}14{Colour.CYAN}]Delete Channels {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}22{Colour.CYAN}]Join            {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}30{Colour.CYAN}]Livestream      {Colour.YELLOW}║")
-        print(f"{Colour.YELLOW}                   ║{Colour.CYAN} [{Colour.WHITE}7{Colour.CYAN}] Leave           {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}15{Colour.CYAN}]Channel Name    {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}23{Colour.CYAN}]Join            {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}31{Colour.CYAN}]Livestream      {Colour.YELLOW}║")
-        print(f"{Colour.YELLOW}                   ║{Colour.CYAN} [{Colour.WHITE}8{Colour.CYAN}] Create Webhook  {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}16{Colour.CYAN}]Channel Name    {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}24{Colour.CYAN}]Join            {Colour.YELLOW}║{Colour.CYAN} [{Colour.WHITE}32{Colour.CYAN}]{Colour.RED}Exit            {Colour.YELLOW}║")
+        print(f"{Colour.YELLOW}                   ║{Colour.CYAN} [{Colour.WHITE}1{Colour.CYAN}] {Main.FunctionDict[1][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[1][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}9{Colour.CYAN}] {Main.FunctionDict[9][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[9][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}17{Colour.CYAN}]{Main.FunctionDict[17][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[17][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}25{Colour.CYAN}]{Main.FunctionDict[25][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[25][1])))}║")
+        print(f"{Colour.YELLOW}                   ║{Colour.CYAN} [{Colour.WHITE}2{Colour.CYAN}] {Main.FunctionDict[2][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[2][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}10{Colour.CYAN}]{Main.FunctionDict[10][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[10][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}18{Colour.CYAN}]{Main.FunctionDict[18][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[18][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}26{Colour.CYAN}]{Main.FunctionDict[26][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[26][1])))}║")
+        print(f"{Colour.YELLOW}                   ║{Colour.CYAN} [{Colour.WHITE}3{Colour.CYAN}] {Main.FunctionDict[3][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[3][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}11{Colour.CYAN}]{Main.FunctionDict[11][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[11][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}19{Colour.CYAN}]{Main.FunctionDict[19][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[19][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}27{Colour.CYAN}]{Main.FunctionDict[27][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[27][1])))}║")
+        print(f"{Colour.YELLOW}                   ║{Colour.CYAN} [{Colour.WHITE}4{Colour.CYAN}] {Main.FunctionDict[4][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[4][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}12{Colour.CYAN}]{Main.FunctionDict[12][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[12][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}20{Colour.CYAN}]{Main.FunctionDict[20][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[20][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}28{Colour.CYAN}]{Main.FunctionDict[28][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[28][1])))}║")
+        print(f"{Colour.YELLOW}                   ║{Colour.CYAN} [{Colour.WHITE}5{Colour.CYAN}] {Main.FunctionDict[5][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[5][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}13{Colour.CYAN}]{Main.FunctionDict[13][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[13][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}21{Colour.CYAN}]{Main.FunctionDict[21][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[21][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}29{Colour.CYAN}]{Main.FunctionDict[29][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[29][1])))}║")
+        print(f"{Colour.YELLOW}                   ║{Colour.CYAN} [{Colour.WHITE}6{Colour.CYAN}] {Main.FunctionDict[6][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[6][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}14{Colour.CYAN}]{Main.FunctionDict[14][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[14][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}22{Colour.CYAN}]{Main.FunctionDict[22][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[22][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}30{Colour.CYAN}]{Main.FunctionDict[30][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[30][1])))}║")
+        print(f"{Colour.YELLOW}                   ║{Colour.CYAN} [{Colour.WHITE}7{Colour.CYAN}] {Main.FunctionDict[7][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[7][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}15{Colour.CYAN}]{Main.FunctionDict[15][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[15][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}23{Colour.CYAN}]{Main.FunctionDict[23][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[23][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}31{Colour.CYAN}]{Main.FunctionDict[31][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[31][1])))}║")
+        print(f"{Colour.YELLOW}                   ║{Colour.CYAN} [{Colour.WHITE}8{Colour.CYAN}] {Main.FunctionDict[8][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[8][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}16{Colour.CYAN}]{Main.FunctionDict[16][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[16][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}24{Colour.CYAN}]{Main.FunctionDict[24][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[24][1])))}"\
+                                                f"║{Colour.CYAN} [{Colour.WHITE}32{Colour.CYAN}]{Colour.RED}{Main.FunctionDict[32][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[32][1])))}║")
         print(f"{Colour.YELLOW}                   ╚═════════════════════╩═════════════════════╩═════════════════════╩═════════════════════╝")
 
 class ReqHeader:
@@ -383,6 +424,49 @@ class Discord:
 
         except:
             pass
+    
+    def CreateRole(RoleName):
+        response = requests.post(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/roles", headers=ReqHeader.DiscordHeader(), json={
+            "name":RoleName
+        })
+        if response.status_code in Status.SuccessStatus:
+            Status.Success(f"Created Role {RoleName}")
+
+        elif response.status_code == 429:
+            Status.Ratelimit(f"")
+            time.sleep(0.05)
+            threading.Thread(target=Discord.CreateChannel, args=(RoleName)).start()
+        
+        else:
+            Status.Fail(f"Couldn't Create Channel {RoleName}")
+
+    def DeleteRole(RoleID):
+        response = requests.delete(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/roles/{RoleID}", headers=ReqHeader.DiscordHeader())
+        if response.status_code in Status.SuccessStatus:
+            Status.Success(f"Created role {RoleID}")
+        
+        elif response.status_code == 429:
+            Status.Ratelimit(f"")
+            time.sleep(0.05)
+            threading.Thread(target=Discord.CreateChannel, args=(RoleID)).start()
+
+        else:
+            Status.Fail(f"Couldn't delete role {RoleID}")
+
+    def ChangeRoleName(RoleID , RoleName):
+        response = requests.patch(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/roles/{RoleID}", headers=ReqHeader.DiscordHeader(), json={
+            "name": f"{RoleName}"
+        })
+
+        if response.status_code in Status.SuccessStatus:
+            Status.Success(f"CHANNEL NAME CHANGED")
+        
+        elif response.status_code == 429:
+            time.sleep(0.05)
+            threading.Thread(target=Discord.ChangeChannelName,args=(RoleID,RoleName)).start()
+
+        else:
+            Status.Fail(f"CHANNEL NAME NOT CHANGED")
 
     def CreateChannel(ChannelName):
         response = requests.post(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/channels", headers=ReqHeader.DiscordHeader(), json = {
@@ -398,18 +482,133 @@ class Discord:
             threading.Thread(target=Discord.CreateChannel, args=(ChannelName)).start()
 
         else:
-            print(f"Couldn't Create Channel {ChannelName}")
+            Status.Fail(f"Couldn't Create Channel {ChannelName}")
 
 
-    def DeleteChannel(channel):
+    def DeleteChannel(ChannelID):
         try:
-            response = requests.delete(f"{URL.BaseURL}channels/{channel}", headers=ReqHeader.DiscordHeader())
+            response = requests.delete(f"{URL.BaseURL}channels/{ChannelID}", headers=ReqHeader.DiscordHeader())
             if response.status_code in Status.SuccessStatus:
-                Status.Success(f"Deleted Channel {channel.strip()}\n")
+                Status.Success(f"Deleted Channel {ChannelID}")
             else:
-                print(f"Couldn't Delete Channel {channel.strip()}\n")
+                print(f"Couldn't Delete Channel {ChannelID}")
         except:
             pass
+    
+    def ChangeChannelName(Channel , ChannelName):
+        response = requests.patch(f"{URL.BaseURL}channels/{Channel}", headers=ReqHeader.DiscordHeader(), json={
+            "name": f"{ChannelName}"
+        })
+
+        if response.status_code in Status.SuccessStatus:
+            Status.Success(f"CHANNEL NAME CHANGED")
+        
+        elif response.status_code == 429:
+            time.sleep(0.05)
+            threading.Thread(target=Discord.ChangeChannelName,args=(Channel)).start()
+
+        else:
+            Status.Fail(f"CHANNEL NAME NOT CHANGED")
+
+    def CreateCategory(ChannelName):
+        response = requests.post(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/channels", headers=ReqHeader.DiscordHeader(), json = {
+            "name": ChannelName,
+            "type": 4,
+            "permission_overwrites": []
+
+        })
+        if response.status_code in Status.SuccessStatus:
+            Status.Success(f"Created Channel {ChannelName}")
+        
+        elif response.status_code == 429:
+            Status.Ratelimit(f"")
+            time.sleep(0.05)
+            threading.Thread(target=Discord.CreateChannel, args=(ChannelName)).start()
+
+        else:
+            Status.Fail(f"Couldn't Create Channel {ChannelName}")
+
+
+    def DeleteCategory(ChannelID):
+        try:
+            response = requests.delete(f"{URL.BaseURL}channels/{ChannelID}", headers=ReqHeader.DiscordHeader())
+            if response.status_code in Status.SuccessStatus:
+                Status.Success(f"Deleted Channel {ChannelID}")
+
+            elif response.status_code == 429:
+                Status.Ratelimit(f"")
+                time.sleep(0.05)
+                threading.Thread(target=Discord.CreateChannel, args=(ChannelID)).start()
+            
+            else:
+                Status.Fail(f"Couldn't Delete Channel {ChannelID}")
+        except:
+            pass
+    
+    def ChangeCategoryName(Channel , ChannelName):
+        response = requests.patch(f"{URL.BaseURL}channels/{Channel}", headers=ReqHeader.DiscordHeader(), json={
+            "name": f"{ChannelName}"
+        })
+
+        if response.status_code in Status.SuccessStatus:
+            Status.Success(f"CHANNEL NAME CHANGED")
+        
+        elif response.status_code == 429:
+            time.sleep(0.05)
+            threading.Thread(target=Discord.ChangeChannelName,args=(Channel)).start()
+
+        else:
+            Status.Fail(f"CHANNEL NAME NOT CHANGED")
+    
+    def CreateVoiceChannel(ChannelName):
+        response = requests.post(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/channels", headers=ReqHeader.DiscordHeader(), json = {
+            "name": ChannelName,
+            "type": 2,
+            "permission_overwrites": []
+
+        })
+        if response.status_code in Status.SuccessStatus:
+            Status.Success(f"Created Channel {ChannelName}")
+        
+        elif response.status_code == 429:
+            Status.Ratelimit(f"")
+            time.sleep(0.05)
+            threading.Thread(target=Discord.CreateChannel, args=(ChannelName)).start()
+
+        else:
+            Status.Fail(f"Couldn't Create Channel {ChannelName}")
+
+
+    def DeleteVoiceChannel(ChannelID):
+        try:
+            response = requests.delete(f"{URL.BaseURL}channels/{ChannelID}", headers=ReqHeader.DiscordHeader())
+            if response.status_code in Status.SuccessStatus:
+                Status.Success(f"Deleted Channel {ChannelID}")
+
+            elif response.status_code == 429:
+                Status.Ratelimit(f"")
+                time.sleep(0.05)
+                threading.Thread(target=Discord.CreateChannel, args=(ChannelID)).start()
+            
+            else:
+                Status.Fail(f"Couldn't Delete Channel {ChannelID}")
+        except:
+            pass
+    
+    def ChangeVoiceName(Channel , ChannelName):
+        response = requests.patch(f"{URL.BaseURL}channels/{Channel}", headers=ReqHeader.DiscordHeader(), json={
+            "name": f"{ChannelName}"
+        })
+
+        if response.status_code in Status.SuccessStatus:
+            Status.Success(f"CHANNEL NAME CHANGED")
+        
+        elif response.status_code == 429:
+            time.sleep(0.05)
+            threading.Thread(target=Discord.ChangeChannelName,args=(Channel)).start()
+
+        else:
+            Status.Fail(f"CHANNEL NAME NOT CHANGED")
 
     def Ban(Member):
         try:
@@ -437,32 +636,17 @@ class Discord:
                 'reason': 'NUKE'
             })
             if response.status_code in Status.SuccessStatus:
-                Status.Success(f" [SUCCESS] {Member.strip()}")
+                Status.Success(f"{Member.strip()}")
 
             elif response.status_code == 429:
                 time.sleep(0.05)
                 threading.Thread(target=Discord.Kick, args=(Member)).start()
             
             else:
-                Status.Fail(f" [FAILED] {Member.strip()}")
+                Status.Fail(f"{Member.strip()}")
                 
         except:
             pass
-    
-    def ChangeChannelName(Channel , ChannelName):
-        response = requests.patch(f"{URL.BaseURL}channels/{Channel}", headers=ReqHeader.DiscordHeader(), json={
-            "name": f"{ChannelName}"
-        })
-
-        if response.status_code in Status.SuccessStatus:
-            Status.Success(f" [SUCCESS] CHANNEL NAME CHANGED")
-        
-        elif response.status_code == 429:
-            time.sleep(0.05)
-            threading.Thread(target=Discord.ChangeChannelName,args=(Channel)).start()
-
-        else:
-            Status.Fail(f" [FAILED] CHANNEL NAME NOT CHANGED")
 
     def CreateWebhook(Channel):
         response = requests.post(f"{URL.BaseURL}channels/{Channel}/webhooks", json={
@@ -470,35 +654,35 @@ class Discord:
             }, headers= ReqHeader.DiscordHeader())
 
         if response.status_code in Status.SuccessStatus:
-            Status.Success(f" [SUCCESS] WEBHOOK CREATED")
+            Status.Success(f"WEBHOOK CREATED")
 
         elif response.status_code == 429:
             threading.Thread(target=Discord.CreateWebhook,args=(Channel)).start()
         
         else:
-            Status.Fail(f" [FAILED] WEBHOOK NOT CREATED")
+            Status.Fail(f"WEBHOOK NOT CREATED")
 
     def Join(token):
         response = requests.post(f"{URL.BaseURL}invites/{Constant.INVITE_CODE}", headers= ReqHeader.DiscordHeader())
         if response.status_code in Status.SuccessStatus:
-            Status.Success(f" [SUCCESS] TOKEN : {token} JOINED")
+            Status.Success(f"TOKEN : {token} JOINED")
         
         elif response.status_code == 429:
             threading.Thread(target=Discord.Join,args=(token)).start()
 
         else:
-            Status.Fail(f" [FAILED] TOKEN : {token} NOT JOINED")
+            Status.Fail(f"TOKEN : {token} NOT JOINED")
 
     def Leave(token):   
         response = requests.delete(f"{URL.BaseURL}users/@me/guilds/{Constant.SERVER_ID}", json={"lurking": "false"} , headers=ReqHeader())
         if response.status_code in Status.SuccessStatus:
-            Status.Success(f" [SUCCESS] TOKEN : {token} LEAVE")
+            Status.Success(f"TOKEN : {token} LEAVE")
         
         elif response.status_code == 429:
             threading.Thread(target=Discord.Leave,args=(token)).start()
         
         else:
-            Status.Fail(f" [FAILED] TOKEN : {token} NOT LEAVE")
+            Status.Fail(f"TOKEN : {token} NOT LEAVE")
 
     def Connect(token,VOICE_ID):
         ws = websocket.WebSocket()
@@ -609,7 +793,7 @@ class ThreadFunction:
         Threads =[] 
         while True:
             Webhook_url = input(f"{Colour.YELLOW}                        Webhook URL : ")
-            if URL.WebhookURL in Webhook_url and requests.get(Webhook_url).status_code == 200:
+            if URL.WebhookURL in Webhook_url and requests.get(Webhook_url).status_code == 200 and validators.url(Webhook_url):
                 break
                 
             else:
@@ -766,63 +950,76 @@ class ThreadFunction:
 
 class Main:
 
+    NEEDPROXY = [9]
     FunctionDict = {
-        1: ThreadFunction.Channel_ID, 
-        2: ThreadFunction.Member_ID,
-        3: ThreadFunction.Role_ID, 
-        4: ThreadFunction.ThreadKick,
-        5: ThreadFunction.ThreadBan,
-        6: Discord.Join,
-        7: Discord.Leave, 
-        8: Discord.CreateWebhook,
-        9: ThreadFunction.ThreadSpamWebhook,
-        10: ThreadFunction.ThreadConnect, 
-        11: ThreadFunction.ThreadOnline,
-        12: ThreadFunction.ThreadLivestream,
-        13: Discord.CreateChannel,
-        14: Discord.DeleteChannel,
-        15: Discord.ChangeChannelName,
-        #16:
-        #17:
-        #18:
-        #19:
-        #20:
-        #21:
-        #22:
-        #23:
-        #24:
-        #25:
-        #26:
-        #27:
-        #28:
-        #29:
-        #30:
-        #31:
-        32: exit
+        1: [ThreadFunction.Channel_ID,"Scrape Channels"], 
+        2: [ThreadFunction.Member_ID,"Scrape Members"],
+        3: [ThreadFunction.Role_ID,"Scrape Roles"], 
+        4: [ThreadFunction.ThreadKick,"Kick"],
+        5: [ThreadFunction.ThreadBan,"Ban"],
+        6: [Discord.Join,"Join"],
+        7: [Discord.Leave,"Leave"], 
+        8: [Discord.CreateWebhook,"Create Webhook"],
+        9: [ThreadFunction.ThreadSpamWebhook,"Spam Webhook"],
+        10: [ThreadFunction.ThreadConnect,"Connect"], 
+        11: [ThreadFunction.ThreadOnline,"Online"],
+        12: [ThreadFunction.ThreadLivestream,"Livestream"],
+        13: [Discord.CreateChannel,"Create Channels"],
+        14: [Discord.DeleteChannel,"Delete Channels"],
+        15: [Discord.ChangeChannelName,"Channel Name"],
+        16: [Discord.CreateCategory,"Create Category"],
+        17: [Discord.DeleteCategory,"Delete Category"],
+        18: [Discord.ChangeCategoryName,"Category Name"],
+        19: [Discord.CreateVoiceChannel,"Create Voice"],
+        20: [Discord.DeleteVoiceChannel,"Delete Voice"],
+        21: [Discord.ChangeVoiceName,"Change Voice"],
+        22: [Discord.CreateRole,"Create Role"],
+        23: [Discord.DeleteRole,"Delete Role"],
+        24: [Discord.ChangeRoleName,"Change Role"],
+        25: ["","Change Nickname"],
+        26: ["","Server Name"],
+        27: ["","Server Picture"],
+        28: ["","Spam Channel"],
+        29: ["","Token Fuck"],
+        30: ["","Login Token"],
+        31: ["","Nuke Server"],
+        32: [exit,"Exit"]
     }
-     
+    def CallFunction(Proxy):
+        print("hi")
+
     def run(Proxy= None, Getproxy = True):
         if Function.CheckInternet() is True:
             Function.DiscordRPC()
             Function.Clear()
             Function.Menu()
-            Update().UpdateProgram()
-            if Getproxy == False or Proxy is None:
-                Proxy = ProxyIP.GetProxies()
-            while True:
-                try:    
-                    Main.FunctionDict[int(input(f"                          {Colour.YELLOW}ROOT{Colour.WHITE}@{Colour.YELLOW}REACT>> "))](Proxy)
+            Stat , Respond =Update.CheckUpdate(Constant.CheckForUpdate)
+            if Stat == "UPDATE" and Respond.upper() in ["Y","YES"]:
+                Update.UpdateProgram()
+            
+            else:
+                Function.Clear()
+                Function.Menu()
+                if Getproxy == False or Proxy is None:
+                    Proxy = ProxyIP.GetProxies()
+                while True:
+                    try:    
+                        Choice = int(input(f"                   {Colour.YELLOW}ROOT{Colour.WHITE}@{Colour.YELLOW}REACT>> "))
+                        if Choice in Main.NEEDPROXY:
+                            Main.FunctionDict[Choice](Proxy)
+                        
+                        else:
+                            Main.FunctionDict[Choice][0]()
 
-                    if input("CONTINUE ? [ Y/N ]").upper() in ["Y","YES"]:
-                        Main.run(Proxy)
-
-                        break
+                        if input("CONTINUE ? [ Y/N ] ").upper() in ["Y","YES"]:
+                            Main.run(Proxy)
+                            break
+                        
+                        else:
+                            Main.FunctionDict[32]()
                     
-                    else:
-                        exit()
-                
-                except (ValueError, KeyError):
-                    print("Invalid choice")
+                    except (ValueError, KeyError):
+                        Status.Fail(f"Invalid choice")
 
         else:
             Function.Clear()
