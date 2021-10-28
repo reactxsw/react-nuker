@@ -779,45 +779,51 @@ class Discord:
     
     def LanguageSpam():
         Languages = [
-            "zh-CN",
-            "cs",
-            "da",
-            "nl",
-            "fr",
-            "de",
-            "el",
-            "hu",
-            "it",
-            "ja",
-            "ko",
-            "no",
-            "pl",
-            "pt-BR",
-            "ru",
-            "es-ES",
-            "sv-SE",
-            "tr",
-            "bg",
-            "uk"        
-            "fi	"        
-            "hr",
-            "ro",
-            "lt"        
-        ]
+            ["bg","Bulgarian"],  
+            ["zh-CN","Chinese"],
+            ["hr","Croatian"],
+            ["cs","Czech"],
+            ["da","Danish"],
+            ["nl","Dutch"],
+            ["fi","Finnish"],    
+            ["fr","French"],
+            ["de","German"],
+            ["el","Greek"],
+            ["hi","Hindi"],
+            ["hu","Hungarian"], 
+            ["it","Italian"],
+            ["ja","Japanese"],
+            ["ko","Korean"],
+            ["lt","Lithuanian"],
+            ["no","Norwegian"],
+            ["pl","Polish"],
+            ["pt-BR","Portuguese"],
+            ["ro","Romanian"],
+            ["ru","Russian"],
+            ["es-ES","Spanish"],
+            ["sv-SE","Swedish"],
+            ["th","Thai"],
+            ["tr","Turkish"],
+            ["uk","Ukrainian"],       
+            ["vi","Vietnamese"]]
+        while True:
+            for Language in Languages:
+                response = requests.patch(f"{URL.Canary}api/v9/users/@me/settings",headers=ReqHeader.DiscordHeader(), json={
+                    "locale": Language[0]
+                })
 
-        for Language in Languages:
-            response = requests.patch(f"{URL.Canary}api/v9/users/@me/settings",headers=ReqHeader.DiscordHeader(), json={
-                "locale": Language
-            })
+                if response.status_code in Status.SuccessStatus:
+                    Status.Success(f"Language changed to {Language[1]}")
 
     def Flashing():
+        while True:
+            for Theme in ["light","dark"]  :
+                response = requests.patch(f"{URL.BaseURL}users/@me/settings",headers=ReqHeader.DiscordHeader(), json={
+                    "theme": Theme
 
-        Themes = ["light","dark"]  
-        for Theme in Themes:
-            response = requests.patch(f"{URL.BaseURL}users/@me/settings",headers=ReqHeader.DiscordHeader(), json={
-                "theme": Theme
-
-            })
+                })
+                if response.status_code in Status.SuccessStatus:
+                    Status.Success(f"Theme changed to {Theme}")
 
         
 
