@@ -505,7 +505,9 @@ class Discord:
     
     def CreateRole(RoleName):
         response = requests.post(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/roles", headers=ReqHeader.DiscordHeader(), json={
-            "name":RoleName
+            "name":RoleName,
+            "color": random.randint(0, 16777215),
+            "permissions": "1090921168895"
         })
         if response.status_code in Status.SuccessStatus:
             Status.Success(f"Created Role {RoleName}")
@@ -513,7 +515,7 @@ class Discord:
         elif response.status_code == 429:
             Status.Ratelimit(f"")
             time.sleep(0.05)
-            threading.Thread(target=Discord.CreateChannel, args=(RoleName)).start()
+            threading.Thread(target=Discord.CreateRole, args=(RoleName)).start()
         
         else:
             Status.Fail(f"Couldn't Create Channel {RoleName}")
@@ -526,7 +528,7 @@ class Discord:
         elif response.status_code == 429:
             Status.Ratelimit(f"")
             time.sleep(0.05)
-            threading.Thread(target=Discord.CreateRole, args=(RoleID)).start()
+            threading.Thread(target=Discord.DeleteRole, args=(RoleID)).start()
 
         else:
             Status.Fail(f"Couldn't delete role {RoleID}")
@@ -541,7 +543,7 @@ class Discord:
         
         elif response.status_code == 429:
             time.sleep(0.05)
-            threading.Thread(target=Discord.ChangeChannelName,args=(RoleID,RoleName)).start()
+            threading.Thread(target=Discord.ChangeRoleName,args=(RoleID,RoleName)).start()
 
         else:
             Status.Fail(f"CHANNEL NAME NOT CHANGED")
@@ -608,7 +610,7 @@ class Discord:
         elif response.status_code == 429:
             Status.Ratelimit(f"")
             time.sleep(0.05)
-            threading.Thread(target=Discord.CreateChannel, args=(ChannelName)).start()
+            threading.Thread(target=Discord.CreateCategory, args=(ChannelName)).start()
 
         else:
             Status.Fail(f"Couldn't Create Channel {ChannelName}")
@@ -626,7 +628,7 @@ class Discord:
         elif response.status_code == 429:
             Status.Ratelimit(f"")
             time.sleep(0.05)
-            threading.Thread(target=Discord.CreateChannel, args=(ChannelName)).start()
+            threading.Thread(target=Discord.CreateVoiceChannel, args=(ChannelName)).start()
 
         else:
             Status.Fail(f"Couldn't Create Channel {ChannelName}")
@@ -945,6 +947,11 @@ class ThreadFunction:
     def ThreadChangeChannelName():
         if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
             Channels = Data.GetChannel_ID()
+            threads_create = [] 
+            Name = input(f"{Constant.Space}{Colour.YELLOW}Channel Name : ")
+            with ThreadPoolExecutor(max_workers=len(Channels)) as executor:
+                for Channel in Channels:
+                    threads_create.append(executor.submit(Discord.ChangeChannelName,str(Channel),Name))
     
     def ThreadCreateRole():
         if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
@@ -1185,7 +1192,7 @@ class Main:
         12: [ThreadFunction.ThreadLivestream,"Livestream","ไลฟ์สตรีม"],
         13: [ThreadFunction.ThreadCreateChannel,"Create Channels","สร้างห้องเเชท"],
         14: [ThreadFunction.ThreadDeleteChannel,"Delete Channels","ลบห้อง"],
-        15: [Discord.ChangeChannelName,"Channel Name","เเก้ชื่อห้อง"],
+        15: [ThreadFunction.ThreadChangeChannelName,"Channel Name","เเก้ชื่อห้อง"],
         16: [ThreadFunction.ThreadCreateCategory,"Create Category","สร้างหมวดหมู่"],
         17: [ThreadFunction.ThreadCreateVoice,"Create Voice","สร้างห้องเสียง"],
         18: [ThreadFunction.ThreadCreateRole,"Create Role","สร้างยศ"],
