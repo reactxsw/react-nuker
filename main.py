@@ -294,10 +294,9 @@ class ReqHeader:
                 "authorization": f"{Constant.TOKEN}",
                 "user-agent": f"{UA}",
                 }
-        else:
-            return {
-                "Authorization": f"Bot {Constant.TOKEN}"
-                }
+        return {
+            "Authorization": f"Bot {Constant.TOKEN}"
+            }
 
 class Data:
     def GetTokenInfo():
@@ -1249,8 +1248,9 @@ class Main:
 def start(START=False):
     os.system("color 07")
     title = ''
-    for char in "Disocrd Nuker BY REACT#1120 ^| Loading...": 
+    for char in "Disocrd Nuker BY REACT#1120 | Loading...": 
         title = title + char
+        time.sleep(0.018)
         ctypes.windll.kernel32.SetConsoleTitleW(f'{title}')
 
     if START is True:
