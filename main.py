@@ -15,7 +15,7 @@ import hashlib
 import base64
 import string
 import datetime
-import keyboard
+import subprocess
 import ctypes
 
 
@@ -194,7 +194,7 @@ class Function:
         return False
     
     def Clear():
-        os.system("cls" if os.name == "nt" else "clear")
+        subprocess.call("cls" if os.name == "nt" else "clear",shell=True)
     
     def Spinner():
         l = ['|', '/', '-', '\\']
@@ -413,7 +413,7 @@ class Discord:
                 Image.append(i)
 
         if len(Image) != 0:
-            for i , items in Image:
+            for i , items in enumerate(Image):
                 print(f"{Constant.Space}{Colour.WHITE}[{Colour.CYAN}{i+1}{Colour.WHITE}]. {items}")
             
             base64img = Function.ConvertImgToBase64(Image[int(input(f"{Constant.Space}"))-1])
@@ -435,9 +435,8 @@ class Discord:
         Dynamic = input(f"{Constant.Space}{Colour.YELLOW}Moving Status [Y/N] : {Colour.WHITE}")
         if Dynamic.upper() in ["Y","YES"]:
             Stat = [""]
-            for i in range(len(Text)):
-                Stat.append(Stat[i]+Text[i])
-
+            for i , items in enumerate(Text):
+                Stat.append(items + Text[i])
             del Stat[0]
 
             while True:
