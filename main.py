@@ -337,9 +337,6 @@ class Data:
                 channel_id.append(items["id"])
 
             return channel_id
-        
-        else:
-            print("no token ~")
     
     def GetRole_ID():
         if Constant.TOKEN is not False:
@@ -350,9 +347,6 @@ class Data:
 
             return role_id
 
-        else:
-            pass
-
     def GetMember_ID():
         if Constant.TOKEN is not False:
             member_id = []
@@ -361,10 +355,6 @@ class Data:
                 member_id.append(items["user"]["id"])
 
             return member_id
-        
-        else:
-            pass
-    
 
 class Discord:
     def CopyServer():
