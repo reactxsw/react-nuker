@@ -1,5 +1,3 @@
-
-from colorama.initialise import init
 import requests
 import json
 import pathlib 
@@ -413,7 +411,7 @@ class Discord:
             print(f"{Constant.Space}no token ~")
 
     def CreateServer(ServerName):
-        response= requests.post('https://discord.com/api/v9/guilds', headers=ReqHeader.DiscordHeader(), json={
+        response= requests.post(f"{URL.BaseURL}guilds", headers=ReqHeader.DiscordHeader(), json={
             "name": f"{ServerName}"
             })
         if response.status_code in Status.SuccessStatus:
@@ -439,7 +437,7 @@ class Discord:
                 print(f"{Constant.Space}{Colour.WHITE}[{Colour.CYAN}{i+1}{Colour.WHITE}]. {items}")
             
             base64img = Function.ConvertImgToBase64(Image[int(input(f"{Constant.Space}"))-1])
-            response = requests.patch(f"https://discord.com/api/v9/guilds/{Constant.SERVER_ID}",
+            response = requests.patch(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}",
                 json= {
                     "icon":base64img
                     },
@@ -450,6 +448,18 @@ class Discord:
                 
         else:
             print(f"{Constant.Space}No picture")
+
+    def ChangeServerName():
+        Name = input(f"{Constant.Space}")
+        response = requests.patch(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}", headers=ReqHeader.DiscordHeader(),
+        json={
+            "name":Name
+        })
+        if response.status_code in Status.SuccessStatus:
+            Status.Success(f"Server name changed to {Name}")
+
+        else:
+            Status.Fail("Unable to change server name")
 
     def ChangeStatus():
 
@@ -1129,8 +1139,10 @@ class ThreadFunction:
             with ThreadPoolExecutor(max_workers=len(Members)) as executor:
                 for Member in Members:
                     threads_create.append(executor.submit(Discord.Ban,str(Member),))
+        
         else:
-            print("")
+            print(f"{Constant.Space}")
+
     def ThreadLivestream():
         if Constant.SERVER_ID is not False:
 
@@ -1141,7 +1153,7 @@ class ThreadFunction:
                     threads_create.append(executor.submit(Discord.Livestream,(token),str(VOICE_ID),))
         
         else:
-            print("") 
+            print(f"{Constant.Space}")
     
     def ThreadConnect():
         if Constant.SERVER_ID is not False:
@@ -1152,7 +1164,7 @@ class ThreadFunction:
                     threads_create.append(executor.submit(Discord.Connect,(token),str(VOICE_ID),))
 
         else:
-            pass
+            print(f"{Constant.Space}")
 
     def ThreadOnline():
         if Constant.SERVER_ID is not False:
@@ -1162,8 +1174,9 @@ class ThreadFunction:
             with ThreadPoolExecutor(max_workers=len(Constant.TOKENS)) as executor:
                 for token in Constant.TOKENS:
                     threads_create.append(executor.submit(Discord.Online,(token),(Type),(Game),))
+        
         else:
-            print("")
+            print(f"{Constant.Space}")
 
 class Main:
 
@@ -1189,7 +1202,7 @@ class Main:
         19: [ThreadFunction.ThreadDeleteRole,"Delete Role","ลบยศ"],
         20: [Discord.ChangeRoleName,"Change Role","เปลี่ยนชื่ยศ"],
         21: ["","Change Nickname","Change Nickname"],
-        22: ["","Server Name","Server Name"],
+        22: [Discord.ChangeServerName,"Server Name","Server Name"],
         23: [Discord.ChangeServerImage,"Server Picture","Server Picture"],
         24: ["","Spam Channel","Spam Channel"],
         25: [ThreadFunction.ThreadSpamLanguage,"Language Spam",""],
